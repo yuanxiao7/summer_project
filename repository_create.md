@@ -6,8 +6,8 @@
 
 如：
 
-- ![](D:\summer_assessment\picture\1-1.png)https://github.com/yuanxiao7/summer_project/commit/b88e41f6458738dee7b6d0d0d7b16c16c532da7c
-
+- ![](D:\summer_assessment\picture\1-1.png)[https://github.com/yuanxiao7/summer_project/commit/b88e41f6458738dee7b6d0d0d7b16c16c532da7c
+](https://github.com/yuanxiao7/summer_project/commit/b88e41f6458738dee7b6d0d0d7b16c16c532da7c)
 这里只是给个空目录示范一下。temp为你的文件名，随意，最好用英文的，毕竟windows用中文路径的中会有一些小bug。
 
 然后你就右击鼠标，在菜单栏点击Git Bash Here进入git命令行如下：
