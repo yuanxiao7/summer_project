@@ -1,6 +1,6 @@
-# Explain  the  progress and result of yolov5
+# Explain the progress and result of yolov5
 
-- **注明：这是跟着b导学习的yolov5，源码来源于b导的github**  https://github.com/bubbliiiing/yolov5-pytorch
+- **注明：这是跟着b导学习的yolov5，源码来源于b导的github** https://github.com/bubbliiiing/yolov5-pytorch
 
 （7月4日）
 
@@ -10,19 +10,14 @@ CSPdarknet 跟yolov3的darknet53网络架构有的很带的改动，不再是简
 
 然后到yolo_body部分，yolo_body部分增加了csplayer和倒三角的操作，特区到的特征更加充分，同时也增加了网络的复杂度，检测的效果更好。
 
-网络结构如下所示
+网络结构如下所示![](.\picture\8.png)
 
-![](.\picture\8.png)
-
-
+[![img](.\picture\8.png)](/picture\8.png)
 
 （7月5日）
 
-yolo解码 
+yolo解码
 
-**借鉴出处**  https://blog.csdn.net/weixin_45377629/article/details/124144913 
+**借鉴出处** https://blog.csdn.net/weixin_45377629/article/details/124144913
 
 再利用darknet和yolobody后得到3个yolo_head的输出，不同尺度之下，每个网格点均有先验框，网络训练过程会对先验框的参数进行调整，进而得到预测框，从不同尺度下预测框还原到原图输入的图像上，同时包括该框内目标预测的结果情况（预测框的位置、类别概率、置信度分数）
-
-
-
