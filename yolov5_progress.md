@@ -12,7 +12,7 @@ CSPdarknet 跟yolov3的darknet53网络架构有的很带的改动，不再是简
 
 网络结构如下所示
 
-![](\picture\8.png)
+![](picture\8.png)
 
 
 
