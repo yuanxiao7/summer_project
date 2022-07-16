@@ -686,3 +686,9 @@ yolo解码
 今天de了一天的bug，查看代码。昨天出现的评测指标异常问题的原因还是数据集的问题，标签移动没有移完全，数据没加载完。不出意外，现在开始训练的应该是没有问题的，数据、标签，train、val都是对应的了。
 
 代码能运行，评测指标异常，先查看数据集有没有问题，图片标签对应没有，数据有没有缺少等，然后再去查看代码，debug这些。
+
+
+
+GitHub 上的网络结构示意图
+
+[[![img](https://github.com/yuanxiao7/summer_project/raw/master/.%5Cpicture%5C8.png)](https://github.com/yuanxiao7/summer_project/blob/master/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)
