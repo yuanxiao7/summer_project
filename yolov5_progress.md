@@ -10,7 +10,6 @@
 
 ```python
 
-
 D:\softwear_dl\anaconda\envs\torch1.10\python.exe D:/shuqikaohe/yolov5-pytorch-main/voc_annotation.py
 Generate txt in ImageSets.
 train and val size 19352
@@ -56,7 +55,12 @@ CSPdarknet 跟yolov3的darknet53网络架构有的很带的改动，不再是简
 
 网络结构如下所示![](.\picture\8.png)
 
+<<<<<<< HEAD
 
+=======
+[[![img](.\picture\8.png)](/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)
+
+>>>>>>> f719d01d29830a4f005ad0a171c05bf5b8bffde0
 
 （7月5日）
 
@@ -65,6 +69,7 @@ yolo解码
 **借鉴出处** https://blog.csdn.net/weixin_45377629/article/details/124144913
 
 再利用darknet和yolobody后得到3个yolo_head的输出，不同尺度之下，每个网格点均有先验框，网络训练过程会对先验框的参数进行调整，进而得到预测框，从不同尺度下预测框还原到原图输入的图像上，同时包括该框内目标预测的结果情况（预测框的位置、类别概率、置信度分数）
+<<<<<<< HEAD
 
 
 
@@ -74,6 +79,7 @@ yolo解码
 
 
 ----------------------------------------------------------------
+
         Layer (type)               Output Shape         Param #
           
     ​        ================================================================
@@ -691,4 +697,4 @@ yolo解码
 
 GitHub 上的网络结构示意图
 
-[[![img](https://github.com/yuanxiao7/summer_project/raw/master/.%5Cpicture%5C8.png)](https://github.com/yuanxiao7/summer_project/blob/master/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)
+[[![img](https://github.com/yuanxiao7/summer_project/raw/master/.%5Cpicture%5C8.png)](https://github.com/yuanxiao7/summer_project/blob/master/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)f719d01d29830a4f005ad0a171c05bf5b8bffde0
