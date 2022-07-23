@@ -2,7 +2,13 @@
 
 - **注明：这是跟着b导学习的yolov5，源码来源于b导的github** https://github.com/bubbliiiing/yolov5-pytorch
 
+目录如下
 
+[TOC]
+
+
+
+# baseline
 
 ## 数据集
 
@@ -42,6 +48,10 @@ Generate 2007_train.txt and 2007_val.txt for train done.
 ```
 
 
+
+这是在服务器上报的一个错。torch and
+
+ Couldn't load custom C++ ops. This can happen if your PyTorch and torchvision versions are incompatible, or if you had errors while compiling torchvision from source. For further information on the compatible versions, check https://github.com/pytorch/vision#installation for the compatibility matrix. Please check your PyTorch version with torch.__version__ and your torchvision version with torchvision.__version__ and verify if they are compatible, and if not please reinstall torchvision so that it matches your PyTorch install.
 
 
 
@@ -635,6 +645,12 @@ yolo解码
 
 
 
+## training
+
+
+
+### 加载与训练模型打印的指标
+
 原up主得模型得检测指标，他是在已经训练好的权重下再训练优化的
 
 ![image-20220715154653042](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220715154653042.png)
@@ -661,7 +677,7 @@ yolo解码
 
 
 
-## training
+
 
 7月13-14日
 
@@ -698,3 +714,512 @@ yolo解码
 GitHub 上的网络结构示意图
 
 [[![img](https://github.com/yuanxiao7/summer_project/raw/master/.%5Cpicture%5C8.png)](https://github.com/yuanxiao7/summer_project/blob/master/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)f719d01d29830a4f005ad0a171c05bf5b8bffde0
+
+
+
+7月17日
+
+
+
+![image-20220717220948416](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220717220948416.png)
+
+
+
+### 完整的100个epoch训练
+
+7月19日
+
+虽然一开始训练的指标看起来有问题，但是，我并没有停止训练，然后训着训着，指标就开始正常了，后面想想，刚开始从零训练的模型，指标不正常才是正常的。
+
+我这一次训练，训练集17416，测试集1936，训了2天左右，配置如下
+
+```
+initialize network with normal type
+Configurations:
+----------------------------------------------------------------------
+|                     keys |                                   values|
+----------------------------------------------------------------------
+|             classes_path |               model_data/voc_classes.txt|
+|             anchors_path |              model_data/yolo_anchors.txt|
+|             anchors_mask |        [[6, 7, 8], [3, 4, 5], [0, 1, 2]]|
+|               model_path |                                         |
+|              input_shape |                               [640, 640]|
+|               Init_Epoch |                                        0|
+|             Freeze_Epoch |                                       10|
+|           UnFreeze_Epoch |                                      100|
+|        Freeze_batch_size |                                        8|
+|      Unfreeze_batch_size |                                       12|
+|             Freeze_Train |                                    False|
+|                  Init_lr |                                    0.001|
+|                   Min_lr |                                    1e-05|
+|           optimizer_type |                                     adam|
+|                 momentum |                                    0.937|
+|            lr_decay_type |                                      cos|
+|              save_period |                                       10|
+|                 save_dir |                                     logs|
+|              num_workers |                                        0|
+|                num_train |                                    17416|
+|                  num_val |                                     1936|
+----------------------------------------------------------------------
+```
+
+
+
+第一次迭代的结果是Total Loss: 2.378 || Val Loss: 1.275 ，第二次迭代的结果Total Loss: 0.605 || Val Loss: 0.291 ，loss下降得非常明显，我每10次迭代记录一下测试集的指标。
+
+### 每隔10次迭代打印情况如下
+
+1. ```
+   Calculate Map.
+   45.59% = aeroplane AP 	||	score_threhold=0.5 : F1=0.18 ; Recall=9.79% ; Precision=87.50%
+   42.78% = bicycle AP 	||	score_threhold=0.5 : F1=0.14 ; Recall=7.63% ; Precision=100.00%
+   16.78% = bird AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.60% ; Precision=100.00%
+   17.16% = boat AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.75% ; Precision=100.00%
+   3.39% = bottle AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.00% ; Precision=0.00%
+   55.35% = bus AP 	||	score_threhold=0.5 : F1=0.28 ; Recall=16.35% ; Precision=100.00%
+   62.80% = car AP 	||	score_threhold=0.5 : F1=0.46 ; Recall=30.51% ; Precision=90.00%
+   30.42% = cat AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.67% ; Precision=100.00%
+   23.11% = chair AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.25% ; Precision=100.00%
+   20.19% = cow AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.90% ; Precision=100.00%
+   6.97% = diningtable AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.00% ; Precision=0.00%
+   19.48% = dog AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.44% ; Precision=100.00%
+   40.61% = horse AP 	||	score_threhold=0.5 : F1=0.04 ; Recall=2.27% ; Precision=100.00%
+   38.50% = motorbike AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.90% ; Precision=100.00%
+   62.90% = person AP 	||	score_threhold=0.5 : F1=0.42 ; Recall=27.17% ; Precision=92.28%
+   5.57% = pottedplant AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.58% ; Precision=100.00%
+   35.94% = sheep AP 	||	score_threhold=0.5 : F1=0.08 ; Recall=4.44% ; Precision=57.14%
+   10.78% = sofa AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=1.03% ; Precision=100.00%
+   45.06% = train AP 	||	score_threhold=0.5 : F1=0.06 ; Recall=2.86% ; Precision=75.00%
+   37.47% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.34 ; Recall=21.77% ; Precision=81.82%
+   mAP = 31.04%
+   Get map done.
+   Epoch:10/100
+   Total Loss: 0.144 || Val Loss: 0.092 
+   Save best model to best_epoch_weights.pth
+   ```
+
+2. ```
+   Calculate Map.
+   55.90% = aeroplane AP 	||	score_threhold=0.5 : F1=0.30 ; Recall=18.18% ; Precision=92.86%
+   56.28% = bicycle AP 	||	score_threhold=0.5 : F1=0.39 ; Recall=24.58% ; Precision=96.67%
+   35.26% = bird AP 	||	score_threhold=0.5 : F1=0.15 ; Recall=8.38% ; Precision=100.00%
+   30.80% = boat AP 	||	score_threhold=0.5 : F1=0.10 ; Recall=5.26% ; Precision=100.00%
+   20.29% = bottle AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.48% ; Precision=100.00%
+   67.76% = bus AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=33.65% ; Precision=94.59%
+   69.09% = car AP 	||	score_threhold=0.5 : F1=0.59 ; Recall=43.83% ; Precision=90.50%
+   46.41% = cat AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.67% ; Precision=50.00%
+   33.59% = chair AP 	||	score_threhold=0.5 : F1=0.10 ; Recall=5.21% ; Precision=84.00%
+   22.33% = cow AP 	||	score_threhold=0.5 : F1=0.00 ; Recall=0.00% ; Precision=0.00%
+   24.94% = diningtable AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=0.99% ; Precision=100.00%
+   32.18% = dog AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.44% ; Precision=100.00%
+   51.25% = horse AP 	||	score_threhold=0.5 : F1=0.29 ; Recall=16.67% ; Precision=100.00%
+   51.10% = motorbike AP 	||	score_threhold=0.5 : F1=0.18 ; Recall=9.91% ; Precision=91.67%
+   69.54% = person AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=35.04% ; Precision=92.32%
+   15.74% = pottedplant AP 	||	score_threhold=0.5 : F1=0.01 ; Recall=0.58% ; Precision=100.00%
+   49.91% = sheep AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=37.78% ; Precision=72.34%
+   23.78% = sofa AP 	||	score_threhold=0.5 : F1=0.02 ; Recall=1.03% ; Precision=100.00%
+   64.65% = train AP 	||	score_threhold=0.5 : F1=0.27 ; Recall=16.19% ; Precision=89.47%
+   50.20% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.45 ; Recall=30.65% ; Precision=86.36%
+   mAP = 43.55%
+   Get map done.
+   Epoch:20/100
+   Total Loss: 0.125 || Val Loss: 0.080 
+   Save best model to best_epoch_weights.pth
+   ```
+
+   
+
+
+
+3. ```
+   Calculate Map.
+   68.59% = aeroplane AP 	||	score_threhold=0.5 : F1=0.47 ; Recall=30.77% ; Precision=97.78%
+   62.81% = bicycle AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=34.75% ; Precision=93.18%
+   50.98% = bird AP 	||	score_threhold=0.5 : F1=0.30 ; Recall=17.96% ; Precision=100.00%
+   37.55% = boat AP 	||	score_threhold=0.5 : F1=0.30 ; Recall=18.05% ; Precision=92.31%
+   33.56% = bottle AP 	||	score_threhold=0.5 : F1=0.16 ; Recall=8.70% ; Precision=94.74%
+   73.74% = bus AP 	||	score_threhold=0.5 : F1=0.65 ; Recall=49.04% ; Precision=94.44%
+   72.39% = car AP 	||	score_threhold=0.5 : F1=0.66 ; Recall=52.78% ; Precision=89.71%
+   58.90% = cat AP 	||	score_threhold=0.5 : F1=0.05 ; Recall=2.68% ; Precision=80.00%
+   44.02% = chair AP 	||	score_threhold=0.5 : F1=0.27 ; Recall=16.13% ; Precision=92.86%
+   38.82% = cow AP 	||	score_threhold=0.5 : F1=0.05 ; Recall=2.70% ; Precision=60.00%
+   39.54% = diningtable AP 	||	score_threhold=0.5 : F1=0.09 ; Recall=4.95% ; Precision=100.00%
+   44.20% = dog AP 	||	score_threhold=0.5 : F1=0.05 ; Recall=2.62% ; Precision=85.71%
+   54.30% = horse AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=24.24% ; Precision=91.43%
+   59.55% = motorbike AP 	||	score_threhold=0.5 : F1=0.31 ; Recall=18.92% ; Precision=87.50%
+   73.27% = person AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=42.74% ; Precision=91.85%
+   27.32% = pottedplant AP 	||	score_threhold=0.5 : F1=0.12 ; Recall=6.43% ; Precision=68.75%
+   57.44% = sheep AP 	||	score_threhold=0.5 : F1=0.56 ; Recall=47.78% ; Precision=68.25%
+   28.76% = sofa AP 	||	score_threhold=0.5 : F1=0.12 ; Recall=6.19% ; Precision=85.71%
+   69.38% = train AP 	||	score_threhold=0.5 : F1=0.42 ; Recall=27.62% ; Precision=85.29%
+   58.38% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=36.29% ; Precision=81.82%
+   mAP = 52.67%
+   Get map done.
+   Epoch:30/100
+   Total Loss: 0.116 || Val Loss: 0.071 
+   Save best model to best_epoch_weights.pth
+   ```
+
+   
+
+
+
+4. ```
+   Calculate Map.
+   74.75% = aeroplane AP 	||	score_threhold=0.5 : F1=0.54 ; Recall=38.46% ; Precision=93.22%
+   66.07% = bicycle AP 	||	score_threhold=0.5 : F1=0.62 ; Recall=47.46% ; Precision=87.50%
+   61.48% = bird AP 	||	score_threhold=0.5 : F1=0.43 ; Recall=27.54% ; Precision=97.87%
+   46.41% = boat AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=24.81% ; Precision=84.62%
+   44.24% = bottle AP 	||	score_threhold=0.5 : F1=0.33 ; Recall=20.29% ; Precision=85.71%
+   77.15% = bus AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=57.69% ; Precision=89.55%
+   75.12% = car AP 	||	score_threhold=0.5 : F1=0.74 ; Recall=62.23% ; Precision=89.86%
+   66.40% = cat AP 	||	score_threhold=0.5 : F1=0.26 ; Recall=15.44% ; Precision=88.46%
+   47.70% = chair AP 	||	score_threhold=0.5 : F1=0.42 ; Recall=27.54% ; Precision=88.10%
+   49.65% = cow AP 	||	score_threhold=0.5 : F1=0.35 ; Recall=23.42% ; Precision=70.27%
+   46.86% = diningtable AP 	||	score_threhold=0.5 : F1=0.20 ; Recall=10.89% ; Precision=100.00%
+   53.79% = dog AP 	||	score_threhold=0.5 : F1=0.19 ; Recall=10.92% ; Precision=89.29%
+   62.66% = horse AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=34.85% ; Precision=93.88%
+   66.20% = motorbike AP 	||	score_threhold=0.5 : F1=0.46 ; Recall=30.63% ; Precision=91.89%
+   76.38% = person AP 	||	score_threhold=0.5 : F1=0.65 ; Recall=50.96% ; Precision=90.10%
+   35.17% = pottedplant AP 	||	score_threhold=0.5 : F1=0.24 ; Recall=14.04% ; Precision=72.73%
+   67.68% = sheep AP 	||	score_threhold=0.5 : F1=0.68 ; Recall=61.11% ; Precision=76.39%
+   33.61% = sofa AP 	||	score_threhold=0.5 : F1=0.21 ; Recall=12.37% ; Precision=75.00%
+   73.38% = train AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=48.57% ; Precision=92.73%
+   62.86% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.59 ; Recall=46.77% ; Precision=81.69%
+   mAP = 59.38%
+   Get map done.
+   Epoch:40/100
+   Total Loss: 0.109 || Val Loss: 0.066 
+   Save best model to best_epoch_weights.pth
+   ```
+
+   
+
+
+
+5. ```
+   Calculate Map.
+   77.67% = aeroplane AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=48.25% ; Precision=95.83%
+   69.55% = bicycle AP 	||	score_threhold=0.5 : F1=0.68 ; Recall=54.24% ; Precision=90.14%
+   64.81% = bird AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=34.13% ; Precision=91.94%
+   50.77% = boat AP 	||	score_threhold=0.5 : F1=0.45 ; Recall=30.08% ; Precision=86.96%
+   49.17% = bottle AP 	||	score_threhold=0.5 : F1=0.42 ; Recall=28.50% ; Precision=79.73%
+   79.67% = bus AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=62.50% ; Precision=89.04%
+   77.06% = car AP 	||	score_threhold=0.5 : F1=0.75 ; Recall=64.89% ; Precision=87.87%
+   68.79% = cat AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=24.16% ; Precision=90.00%
+   49.84% = chair AP 	||	score_threhold=0.5 : F1=0.46 ; Recall=31.27% ; Precision=85.71%
+   55.35% = cow AP 	||	score_threhold=0.5 : F1=0.46 ; Recall=33.33% ; Precision=75.51%
+   49.00% = diningtable AP 	||	score_threhold=0.5 : F1=0.32 ; Recall=18.81% ; Precision=100.00%
+   61.87% = dog AP 	||	score_threhold=0.5 : F1=0.32 ; Recall=19.65% ; Precision=84.91%
+   63.47% = horse AP 	||	score_threhold=0.5 : F1=0.54 ; Recall=38.64% ; Precision=89.47%
+   64.88% = motorbike AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=35.14% ; Precision=90.70%
+   77.76% = person AP 	||	score_threhold=0.5 : F1=0.68 ; Recall=55.34% ; Precision=89.36%
+   41.13% = pottedplant AP 	||	score_threhold=0.5 : F1=0.32 ; Recall=19.88% ; Precision=79.07%
+   73.14% = sheep AP 	||	score_threhold=0.5 : F1=0.72 ; Recall=66.67% ; Precision=77.92%
+   37.82% = sofa AP 	||	score_threhold=0.5 : F1=0.35 ; Recall=22.68% ; Precision=81.48%
+   75.19% = train AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=57.14% ; Precision=90.91%
+   65.53% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=54.03% ; Precision=79.76%
+   mAP = 62.62%
+   Get map done.
+   Epoch:50/100
+   Total Loss: 0.104 || Val Loss: 0.063 
+   Save best model to best_epoch_weights.pth
+   ```
+
+   
+
+#### 收敛趋势
+
+- 在第五次打印时，验证集的loss趋于稳定，而训练集的loss在很缓慢的下降，而此时的map已经达到60几了。
+
+
+
+6. ```
+   Calculate Map.
+   78.17% = aeroplane AP 	||	score_threhold=0.5 : F1=0.68 ; Recall=53.15% ; Precision=95.00%
+   70.53% = bicycle AP 	||	score_threhold=0.5 : F1=0.67 ; Recall=53.39% ; Precision=90.00%
+   68.33% = bird AP 	||	score_threhold=0.5 : F1=0.57 ; Recall=41.32% ; Precision=90.79%
+   54.20% = boat AP 	||	score_threhold=0.5 : F1=0.45 ; Recall=30.08% ; Precision=86.96%
+   50.46% = bottle AP 	||	score_threhold=0.5 : F1=0.49 ; Recall=34.78% ; Precision=83.72%
+   82.06% = bus AP 	||	score_threhold=0.5 : F1=0.77 ; Recall=67.31% ; Precision=89.74%
+   79.01% = car AP 	||	score_threhold=0.5 : F1=0.76 ; Recall=66.83% ; Precision=87.34%
+   70.07% = cat AP 	||	score_threhold=0.5 : F1=0.43 ; Recall=28.86% ; Precision=87.76%
+   50.40% = chair AP 	||	score_threhold=0.5 : F1=0.47 ; Recall=33.00% ; Precision=82.61%
+   57.24% = cow AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=45.95% ; Precision=77.27%
+   53.21% = diningtable AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=23.76% ; Precision=96.00%
+   63.35% = dog AP 	||	score_threhold=0.5 : F1=0.41 ; Recall=26.64% ; Precision=88.41%
+   64.77% = horse AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=43.18% ; Precision=89.06%
+   68.30% = motorbike AP 	||	score_threhold=0.5 : F1=0.59 ; Recall=44.14% ; Precision=89.09%
+   79.01% = person AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=57.73% ; Precision=89.43%
+   44.36% = pottedplant AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=24.56% ; Precision=82.35%
+   73.62% = sheep AP 	||	score_threhold=0.5 : F1=0.71 ; Recall=67.78% ; Precision=75.31%
+   38.63% = sofa AP 	||	score_threhold=0.5 : F1=0.38 ; Recall=24.74% ; Precision=80.00%
+   74.42% = train AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=59.05% ; Precision=93.94%
+   68.67% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.67 ; Recall=57.26% ; Precision=79.78%
+   mAP = 64.44%
+   Get map done.
+   Epoch:60/100
+   Total Loss: 0.100 || Val Loss: 0.062 
+   ```
+
+   
+
+
+
+7. ```
+   Calculate Map.
+   78.80% = aeroplane AP 	||	score_threhold=0.5 : F1=0.68 ; Recall=53.85% ; Precision=92.77%
+   71.32% = bicycle AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=56.78% ; Precision=90.54%
+   68.27% = bird AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=43.11% ; Precision=90.00%
+   55.41% = boat AP 	||	score_threhold=0.5 : F1=0.49 ; Recall=34.59% ; Precision=86.79%
+   52.32% = bottle AP 	||	score_threhold=0.5 : F1=0.53 ; Recall=39.13% ; Precision=81.00%
+   82.20% = bus AP 	||	score_threhold=0.5 : F1=0.78 ; Recall=70.19% ; Precision=87.95%
+   79.55% = car AP 	||	score_threhold=0.5 : F1=0.78 ; Recall=69.01% ; Precision=88.79%
+   70.97% = cat AP 	||	score_threhold=0.5 : F1=0.47 ; Recall=32.21% ; Precision=87.27%
+   50.98% = chair AP 	||	score_threhold=0.5 : F1=0.48 ; Recall=34.49% ; Precision=80.81%
+   59.21% = cow AP 	||	score_threhold=0.5 : F1=0.57 ; Recall=46.85% ; Precision=74.29%
+   55.12% = diningtable AP 	||	score_threhold=0.5 : F1=0.37 ; Recall=22.77% ; Precision=95.83%
+   65.48% = dog AP 	||	score_threhold=0.5 : F1=0.45 ; Recall=30.57% ; Precision=86.42%
+   69.05% = horse AP 	||	score_threhold=0.5 : F1=0.62 ; Recall=46.97% ; Precision=91.18%
+   67.61% = motorbike AP 	||	score_threhold=0.5 : F1=0.60 ; Recall=46.85% ; Precision=83.87%
+   79.08% = person AP 	||	score_threhold=0.5 : F1=0.72 ; Recall=59.88% ; Precision=89.23%
+   45.45% = pottedplant AP 	||	score_threhold=0.5 : F1=0.41 ; Recall=26.90% ; Precision=83.64%
+   75.31% = sheep AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=71.11% ; Precision=74.42%
+   40.11% = sofa AP 	||	score_threhold=0.5 : F1=0.41 ; Recall=28.87% ; Precision=71.79%
+   72.84% = train AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=57.14% ; Precision=90.91%
+   69.65% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.69 ; Recall=58.06% ; Precision=83.72%
+   mAP = 65.44%
+   Get map done.
+   Epoch:70/100
+   Total Loss: 0.097 || Val Loss: 0.061 
+   Save best model to best_epoch_weights.pth
+   
+   ```
+
+#### 从这里验证loss几乎不变了
+
+
+
+8. ```
+   Calculate Map.
+   81.96% = aeroplane AP 	||	score_threhold=0.5 : F1=0.71 ; Recall=57.34% ; Precision=93.18%
+   73.18% = bicycle AP 	||	score_threhold=0.5 : F1=0.71 ; Recall=58.47% ; Precision=89.61%
+   69.08% = bird AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=43.71% ; Precision=85.88%
+   54.26% = boat AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=35.34% ; Precision=87.04%
+   54.06% = bottle AP 	||	score_threhold=0.5 : F1=0.54 ; Recall=40.10% ; Precision=83.00%
+   81.08% = bus AP 	||	score_threhold=0.5 : F1=0.80 ; Recall=73.08% ; Precision=89.41%
+   79.57% = car AP 	||	score_threhold=0.5 : F1=0.78 ; Recall=68.77% ; Precision=90.73%
+   73.25% = cat AP 	||	score_threhold=0.5 : F1=0.53 ; Recall=37.58% ; Precision=87.50%
+   52.64% = chair AP 	||	score_threhold=0.5 : F1=0.49 ; Recall=35.24% ; Precision=81.61%
+   57.71% = cow AP 	||	score_threhold=0.5 : F1=0.60 ; Recall=49.55% ; Precision=77.46%
+   54.22% = diningtable AP 	||	score_threhold=0.5 : F1=0.39 ; Recall=24.75% ; Precision=96.15%
+   67.19% = dog AP 	||	score_threhold=0.5 : F1=0.50 ; Recall=34.93% ; Precision=86.96%
+   69.28% = horse AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=50.76% ; Precision=88.16%
+   68.75% = motorbike AP 	||	score_threhold=0.5 : F1=0.63 ; Recall=49.55% ; Precision=87.30%
+   80.47% = person AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=60.87% ; Precision=90.62%
+   44.81% = pottedplant AP 	||	score_threhold=0.5 : F1=0.39 ; Recall=26.32% ; Precision=77.59%
+   76.51% = sheep AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=72.22% ; Precision=73.86%
+   40.92% = sofa AP 	||	score_threhold=0.5 : F1=0.43 ; Recall=29.90% ; Precision=76.32%
+   77.40% = train AP 	||	score_threhold=0.5 : F1=0.71 ; Recall=58.10% ; Precision=92.42%
+   70.35% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.69 ; Recall=58.06% ; Precision=84.71%
+   mAP = 66.33%
+   Get map done.
+   Epoch:80/100
+   Total Loss: 0.060 || Val Loss: 0.061 
+   
+   ```
+
+   
+
+
+
+9. ```
+   Calculate Map.
+   82.19% = aeroplane AP 	||	score_threhold=0.5 : F1=0.69 ; Recall=55.24% ; Precision=92.94%
+   72.30% = bicycle AP 	||	score_threhold=0.5 : F1=0.69 ; Recall=56.78% ; Precision=89.33%
+   69.72% = bird AP 	||	score_threhold=0.5 : F1=0.58 ; Recall=44.31% ; Precision=84.09%
+   56.05% = boat AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=36.09% ; Precision=88.89%
+   54.48% = bottle AP 	||	score_threhold=0.5 : F1=0.55 ; Recall=41.55% ; Precision=82.69%
+   80.97% = bus AP 	||	score_threhold=0.5 : F1=0.79 ; Recall=72.12% ; Precision=88.24%
+   78.85% = car AP 	||	score_threhold=0.5 : F1=0.77 ; Recall=67.80% ; Precision=90.03%
+   72.29% = cat AP 	||	score_threhold=0.5 : F1=0.57 ; Recall=42.28% ; Precision=85.14%
+   53.45% = chair AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=36.72% ; Precision=82.22%
+   59.58% = cow AP 	||	score_threhold=0.5 : F1=0.62 ; Recall=51.35% ; Precision=78.08%
+   54.29% = diningtable AP 	||	score_threhold=0.5 : F1=0.39 ; Recall=24.75% ; Precision=89.29%
+   67.61% = dog AP 	||	score_threhold=0.5 : F1=0.55 ; Recall=40.17% ; Precision=88.46%
+   70.93% = horse AP 	||	score_threhold=0.5 : F1=0.66 ; Recall=52.27% ; Precision=89.61%
+   68.99% = motorbike AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=51.35% ; Precision=86.36%
+   81.07% = person AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=61.40% ; Precision=91.33%
+   45.46% = pottedplant AP 	||	score_threhold=0.5 : F1=0.41 ; Recall=27.49% ; Precision=78.33%
+   77.97% = sheep AP 	||	score_threhold=0.5 : F1=0.74 ; Recall=74.44% ; Precision=72.83%
+   42.76% = sofa AP 	||	score_threhold=0.5 : F1=0.43 ; Recall=29.90% ; Precision=76.32%
+   78.58% = train AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=59.05% ; Precision=93.94%
+   70.78% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.70 ; Recall=58.06% ; Precision=86.75%
+   mAP = 66.92%
+   Get map done.
+   Epoch:90/100
+   Total Loss: 0.059 || Val Loss: 0.061 
+   
+   ```
+
+   
+
+#### 训练结束
+
+10. ```
+    Calculate Map.
+    82.31% = aeroplane AP 	||	score_threhold=0.5 : F1=0.72 ; Recall=58.04% ; Precision=94.32%
+    73.86% = bicycle AP 	||	score_threhold=0.5 : F1=0.71 ; Recall=58.47% ; Precision=89.61%
+    71.09% = bird AP 	||	score_threhold=0.5 : F1=0.60 ; Recall=46.11% ; Precision=85.56%
+    56.64% = boat AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=36.09% ; Precision=88.89%
+    55.22% = bottle AP 	||	score_threhold=0.5 : F1=0.55 ; Recall=41.55% ; Precision=83.50%
+    81.02% = bus AP 	||	score_threhold=0.5 : F1=0.79 ; Recall=72.12% ; Precision=88.24%
+    79.78% = car AP 	||	score_threhold=0.5 : F1=0.78 ; Recall=68.04% ; Precision=90.06%
+    72.35% = cat AP 	||	score_threhold=0.5 : F1=0.57 ; Recall=42.95% ; Precision=86.49%
+    53.84% = chair AP 	||	score_threhold=0.5 : F1=0.51 ; Recall=37.22% ; Precision=81.52%
+    59.78% = cow AP 	||	score_threhold=0.5 : F1=0.62 ; Recall=51.35% ; Precision=77.03%
+    54.84% = diningtable AP 	||	score_threhold=0.5 : F1=0.40 ; Recall=25.74% ; Precision=89.66%
+    67.63% = dog AP 	||	score_threhold=0.5 : F1=0.57 ; Recall=41.92% ; Precision=88.89%
+    69.88% = horse AP 	||	score_threhold=0.5 : F1=0.66 ; Recall=52.27% ; Precision=89.61%
+    69.37% = motorbike AP 	||	score_threhold=0.5 : F1=0.64 ; Recall=51.35% ; Precision=86.36%
+    80.86% = person AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=61.22% ; Precision=91.15%
+    45.85% = pottedplant AP 	||	score_threhold=0.5 : F1=0.41 ; Recall=27.49% ; Precision=79.66%
+    78.74% = sheep AP 	||	score_threhold=0.5 : F1=0.75 ; Recall=76.67% ; Precision=74.19%
+    43.23% = sofa AP 	||	score_threhold=0.5 : F1=0.44 ; Recall=30.93% ; Precision=76.92%
+    78.73% = train AP 	||	score_threhold=0.5 : F1=0.73 ; Recall=60.00% ; Precision=92.65%
+    71.54% = tvmonitor AP 	||	score_threhold=0.5 : F1=0.69 ; Recall=58.06% ; Precision=85.71%
+    mAP = 67.33%
+    Get map done.
+    Epoch:100/100
+    Total Loss: 0.058 || Val Loss: 0.061 
+    
+    Process finished with exit code 0
+    
+    ```
+
+最后得到的指标，虽然与原主有些差别，但还是可以的。
+
+
+
+
+
+## 预测结果
+
+#### best_epoch_weights.pth model
+
+来看看，这就是在最好的权重下预测的结果
+
+![image-20220719205503220](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220719205503220.png)
+
+
+
+```
+D:\softwear_dl\anaconda\envs\torch1.10\python.exe D:/shuqikaohe/yolov5-pytorch-main/predict.py
+logs/best_epoch_weights.pth model, and classes loaded.
+Configurations:
+----------------------------------------------------------------------
+|                     keys |                                   values|
+----------------------------------------------------------------------
+|               model_path |              logs/best_epoch_weights.pth|
+|             classes_path |               model_data/voc_classes.txt|
+|             anchors_path |              model_data/yolo_anchors.txt|
+|             anchors_mask |        [[6, 7, 8], [3, 4, 5], [0, 1, 2]]|
+|              input_shape |                               [640, 640]|
+|                 backbone |                               cspdarknet|
+|                      phi |                                        s|
+|               confidence |                                      0.5|
+|                  nms_iou |                                      0.3|
+|          letterbox_image |                                     True|
+|                     cuda |                                     True|
+----------------------------------------------------------------------
+Input image filename:img\street.jpg
+b'bicycle 0.90' 720 775 1040 1243
+b'car 0.84' 583 654 773 974
+b'person 0.89' 545 76 957 245
+b'person 0.86' 502 913 999 1146
+b'person 0.82' 543 438 863 547
+b'person 0.74' 524 521 863 640
+```
+
+
+
+#### last_epoch_weights.pth model
+
+这个是在最后一个权重下的预测
+
+![image-20220719205819501](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220719205819501.png)
+
+```
+D:\softwear_dl\anaconda\envs\torch1.10\python.exe D:/shuqikaohe/yolov5-pytorch-main/predict.py
+logs/last_epoch_weights.pth model, and classes loaded.
+Configurations:
+----------------------------------------------------------------------
+|                     keys |                                   values|
+----------------------------------------------------------------------
+|               model_path |              logs/last_epoch_weights.pth|
+|             classes_path |               model_data/voc_classes.txt|
+|             anchors_path |              model_data/yolo_anchors.txt|
+|             anchors_mask |        [[6, 7, 8], [3, 4, 5], [0, 1, 2]]|
+|              input_shape |                               [640, 640]|
+|                 backbone |                               cspdarknet|
+|                      phi |                                        s|
+|               confidence |                                      0.5|
+|                  nms_iou |                                      0.3|
+|          letterbox_image |                                     True|
+|                     cuda |                                     True|
+----------------------------------------------------------------------
+Input image filename:img\street.jpg
+b'bicycle 0.90' 720 774 1039 1243
+b'car 0.84' 583 652 773 973
+b'person 0.88' 549 72 947 251
+b'person 0.86' 502 911 999 1146
+b'person 0.83' 543 438 862 547
+b'person 0.74' 525 521 862 639
+```
+
+
+
+#### model_data/yolov5_s.pth model
+
+下面的这个是up主默认的coco数据集下的权值文件得到的预测。
+
+![image-20220719211020704](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220719211020704.png)
+
+```
+D:\softwear_dl\anaconda\envs\torch1.10\python.exe D:/shuqikaohe/yolov5-pytorch-main/predict.py
+model_data/yolov5_s.pth model, and classes loaded.
+Configurations:
+----------------------------------------------------------------------
+|                     keys |                                   values|
+----------------------------------------------------------------------
+|               model_path |                  model_data/yolov5_s.pth|
+|             classes_path |              model_data/coco_classes.txt|
+|             anchors_path |              model_data/yolo_anchors.txt|
+|             anchors_mask |        [[6, 7, 8], [3, 4, 5], [0, 1, 2]]|
+|              input_shape |                               [640, 640]|
+|                 backbone |                               cspdarknet|
+|                      phi |                                        s|
+|               confidence |                                      0.5|
+|                  nms_iou |                                      0.4|
+|          letterbox_image |                                     True|
+|                     cuda |                                     True|
+----------------------------------------------------------------------
+Input image filename:img\street.jpg
+b'person 0.90' 550 69 940 279
+b'person 0.88' 506 913 994 1144
+b'person 0.87' 519 509 854 671
+b'person 0.80' 540 438 858 545
+b'person 0.78' 566 384 697 424
+b'person 0.53' 580 208 693 263
+b'bicycle 0.90' 714 781 1029 1250
+b'car 0.86' 585 657 771 964
+b'car 0.81' 610 1 678 49
+b'car 0.69' 545 584 717 797
+```
+
+
+
+至此，baseline的模型就跑完了，开始疯狂魔改吧！
+
+
+
