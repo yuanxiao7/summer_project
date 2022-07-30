@@ -1,0 +1,9 @@
+person 0.7853 24 65 252 503
+person 0.0051 29 185 247 382
+chair 0.0013 333 411 374 500
+pottedplant 0.0239 2 67 50 189
+pottedplant 0.0065 8 68 47 109
+pottedplant 0.0059 3 48 52 138
+pottedplant 0.0040 6 0 88 188
+diningtable 0.0012 -2 314 88 481
+tvmonitor 0.0096 2 63 51 193

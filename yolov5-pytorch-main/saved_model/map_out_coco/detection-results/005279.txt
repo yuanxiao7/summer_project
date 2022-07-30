@@ -1,0 +1,6 @@
+person 0.0427 31 23 317 319
+aeroplane 0.0010 0 280 292 328
+diningtable 0.0022 44 126 322 313
+diningtable 0.0015 53 280 305 329
+diningtable 0.0014 24 0 325 132
+diningtable 0.0011 -1 8 303 319

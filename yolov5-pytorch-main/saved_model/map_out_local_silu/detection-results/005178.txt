@@ -1,0 +1,5 @@
+tvmonitor 0.8069 99 40 416 355
+tvmonitor 0.0218 0 91 131 337
+tvmonitor 0.0024 56 -43 474 204
+tvmonitor 0.0019 370 7 499 358
+tvmonitor 0.0014 65 -8 452 53

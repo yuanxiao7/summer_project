@@ -1,0 +1,7 @@
+person 0.0017 14 18 379 304
+chair 0.0043 0 210 71 330
+chair 0.0027 0 168 34 193
+diningtable 0.0125 0 235 73 329
+tvmonitor 0.2850 1 0 144 165
+tvmonitor 0.0462 0 47 15 157
+tvmonitor 0.0026 0 6 10 144

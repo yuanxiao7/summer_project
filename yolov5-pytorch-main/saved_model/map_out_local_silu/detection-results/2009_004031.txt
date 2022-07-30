@@ -1,0 +1,5 @@
+chair 0.0025 2 -82 185 1
+pottedplant 0.0161 49 44 492 362
+pottedplant 0.0022 43 7 230 340
+pottedplant 0.0011 214 128 318 188
+tvmonitor 0.0021 66 -2 499 274

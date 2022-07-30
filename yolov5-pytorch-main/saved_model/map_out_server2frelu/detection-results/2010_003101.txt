@@ -1,0 +1,7 @@
+chair 0.0103 80 310 353 335
+pottedplant 0.7133 -3 32 369 325
+pottedplant 0.0102 133 48 427 311
+pottedplant 0.0063 180 80 347 331
+pottedplant 0.0017 1 86 190 318
+pottedplant 0.0015 243 48 497 317
+pottedplant 0.0012 32 23 475 192
