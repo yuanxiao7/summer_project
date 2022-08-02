@@ -48,7 +48,8 @@ class Conv(nn.Module):
         self.conv   = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)  # 当指定p值时按照p值进行填充，当p值为默认时则通过autopad函数进行填充
         self.bn     = nn.BatchNorm2d(c2, eps=0.001, momentum=0.03)
         self.act    = SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())  # 加入非线性因素
-        # self.act    = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())  # 加入非线性因素
+        # self.act    = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # 加入非线性因素  frelu目前除了召回率其他都比baseline好的模型
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))  # 完整的经过一层卷积操作 即，conv + bn + act
@@ -203,7 +204,7 @@ class CSPDarknet(nn.Module):
 #     print(b2.shape)
 #     print(b3.shape)
 # detection result：
-# torch.Size([1, 64, 320, 320])
+# torch.Size([1, 64, 320, 320])  X
 # torch.Size([1, 256, 80, 80])
 # torch.Size([1, 512, 40, 40])
 # torch.Size([1, 1024, 20, 20])

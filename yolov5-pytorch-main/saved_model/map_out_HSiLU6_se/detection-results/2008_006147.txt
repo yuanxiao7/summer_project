@@ -1,0 +1,6 @@
+bottle 0.0020 8 238 28 301
+tvmonitor 0.3291 3 -3 246 333
+tvmonitor 0.3186 225 9 474 370
+tvmonitor 0.0302 11 32 509 380
+tvmonitor 0.0090 3 10 243 93
+tvmonitor 0.0028 -5 10 254 169

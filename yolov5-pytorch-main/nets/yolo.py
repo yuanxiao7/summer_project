@@ -4,16 +4,15 @@ import torch.nn as nn
 from nets.ConvNext import ConvNeXt_Small, ConvNeXt_Tiny
 from nets.CSPdarknet import C3, Conv, CSPDarknet
 from nets.Swin_transformer import Swin_transformer_Tiny
-# from ConvNext import ConvNeXt_Small, ConvNeXt_Tiny
-# from CSPdarknet import C3, Conv, CSPDarknet
-# from Swin_transformer import Swin_transformer_Tiny
+from utils.attentions import se_block, cbam_block, eca_block, CA_Block
 
+attention_block = [se_block, cbam_block, eca_block, CA_Block]
 
 #---------------------------------------------------#
 #   yolo_body
 #---------------------------------------------------#
 class YoloBody(nn.Module):
-    def __init__(self, anchors_mask, num_classes, phi, backbone='cspdarknet', pretrained=False, input_shape=[640, 640]):
+    def __init__(self, anchors_mask, num_classes, phi, pad = 0, backbone='cspdarknet', pretrained=False, input_shape=[640, 640]):
         super(YoloBody, self).__init__()
         depth_dict          = {'s' : 0.33, 'm' : 0.67, 'l' : 1.00, 'x' : 1.33,}
         width_dict          = {'s' : 0.50, 'm' : 0.75, 'l' : 1.00, 'x' : 1.25,}
@@ -25,6 +24,7 @@ class YoloBody(nn.Module):
         #   输入图片是640, 640, 3
         #   初始的基本通道是64
         #-----------------------------------------------#
+        self.pad = pad     # pad ！！！
         self.backbone_name  = backbone
         if backbone == "cspdarknet":
             #---------------------------------------------------#   
@@ -56,7 +56,12 @@ class YoloBody(nn.Module):
             self.conv_1x1_feat1 = Conv(feat1_c, base_channels * 4, 1, 1)
             self.conv_1x1_feat2 = Conv(feat2_c, base_channels * 8, 1, 1)
             self.conv_1x1_feat3 = Conv(feat3_c, base_channels * 16, 1, 1)
-            
+
+        if 1 <= self.pad and self.pad <= 4:
+            self.feat1_att = attention_block[self.pad - 1](128)
+            self.feat2_att = attention_block[self.pad - 1](256)
+            self.feat3_att = attention_block[self.pad - 1](512)
+
         self.upsample   = nn.Upsample(scale_factor=2, mode="nearest")  # mode="nearest" 上采样采用最邻近插值法
 
         self.conv_for_feat3         = Conv(base_channels * 16, base_channels * 8, 1, 1)  # p3的卷积1024->512
@@ -85,6 +90,11 @@ class YoloBody(nn.Module):
             feat1 = self.conv_1x1_feat1(feat1)
             feat2 = self.conv_1x1_feat2(feat2)
             feat3 = self.conv_1x1_feat3(feat3)
+
+        if 1 <= self.pad and self.pad <= 4:
+            feat1 = self.feat1_att(feat1)
+            feat2 = self.feat2_att(feat2)
+            feat3 = self.feat3_att(feat3)
 
         # 20, 20, 1024 -> 20, 20, 512
         P5          = self.conv_for_feat3(feat3)  # 一般卷积 s=2 降维输出 p'512   p'对应feat1

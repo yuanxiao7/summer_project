@@ -1,0 +1,16 @@
+bottle 0.0014 33 292 50 342
+pottedplant 0.5744 10 20 329 493
+pottedplant 0.0199 2 344 117 476
+pottedplant 0.0102 92 235 254 496
+pottedplant 0.0093 191 115 331 507
+pottedplant 0.0032 18 7 295 286
+pottedplant 0.0018 -4 176 233 491
+pottedplant 0.0018 122 7 330 363
+pottedplant 0.0015 215 247 334 483
+pottedplant 0.0015 4 251 140 486
+pottedplant 0.0015 102 354 248 498
+pottedplant 0.0014 7 26 198 245
+pottedplant 0.0012 -1 339 80 442
+pottedplant 0.0010 0 54 166 460
+pottedplant 0.0010 91 2 268 226
+pottedplant 0.0010 20 140 319 380

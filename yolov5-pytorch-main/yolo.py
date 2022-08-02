@@ -29,10 +29,11 @@ class YOLO(object):
         # --------------------------------------------------------------------------#
         # SiLU
         # "model_path"        : 'model_data/yolov5_s.pth',  # 其次
-        "model_path"        : 'saved_model/best_epoch_weights.pth',  # H_SiLU6
+        # "model_path"        : 'saved_model/map_out_baseline_silu/baseline/best_epoch_weights.pth',  # H_SiLU6
         # "model_path"        : 'saved_model\map_out_server_Hsilu\hsilu/best_epoch_weights.pth',  # x * Fsigmoid
         # "model_path"        : r'weights\ep030-loss0.116-val_loss0.071.pth',  # baseline 的第30个epoch获得比较好的权重
         # "model_path"        : 'server_weights/baseline/best_epoch_weights.pth',
+        "model_path"        : 'saved_model/last_epoch_weights.pth',
 
         # FReLU
         # "model_path"        : r'saved_model\map_out_server2frelu\frelu\best_epoch_weights.pth',  # frelu
@@ -55,6 +56,7 @@ class YOLO(object):
         #                   convnext_small
         #                   swin_transfomer_tiny
         # ------------------------------------------------------#
+        "pad": 1,  # 注意力集中机制调用参数！！！
         "backbone": 'cspdarknet',
         # ------------------------------------------------------#
         #   所使用的YoloV5的版本。s、m、l、x
@@ -125,7 +127,7 @@ class YOLO(object):
         # ---------------------------------------------------#
         #   建立yolo模型，载入yolo模型的权重
         # ---------------------------------------------------#
-        self.net = YoloBody(self.anchors_mask, self.num_classes, self.phi, backbone=self.backbone, input_shape=self.input_shape)
+        self.net = YoloBody(self.anchors_mask, self.num_classes, self.phi, self.pad, backbone=self.backbone, input_shape=self.input_shape)   # self.pad
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net.load_state_dict(torch.load(self.model_path, map_location=device))  # strict=False即使shape不匹配也没关系
         self.net = self.net.eval()

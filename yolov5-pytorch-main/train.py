@@ -105,6 +105,7 @@ if __name__ == "__main__":
     #                   convnext_small
     #                   swin_transfomer_tiny
     #------------------------------------------------------#
+    pad             = 1     # 注意力集中机制调用参数！！！
     backbone        = 'cspdarknet'
     #----------------------------------------------------------------------------------------------------------------------------#
     #   pretrained      是否使用主干网络的预训练权重，此处使用的是True主干的权重，因此是在模型构建的时候进行加载的。
@@ -291,7 +292,7 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, phi, backbone, pretrained=pretrained, input_shape=input_shape)
+    model = YoloBody(anchors_mask, num_classes, phi, pad, backbone, pretrained=pretrained, input_shape=input_shape)  # 爬到！！！
     if not pretrained:
         weights_init(model)
     if model_path != '':
@@ -392,8 +393,8 @@ if __name__ == "__main__":
             save_period = save_period, save_dir = save_dir, num_workers = num_workers, num_train = num_train, num_val = num_val
         )
         #---------------------------------------------------------#
-        #   总训练世代指的是遍历全部数据的总次数
-        #   总训练步长指的是梯度下降的总次数 
+        #   总训练世代指的是遍历全部数据的总次数  epoch
+        #   总训练步长指的是梯度下降的总次数   loss 更改
         #   每个训练世代包含若干训练步长，每个训练步长进行一次梯度下降。
         #   此处仅建议最低训练世代，上不封顶，计算时只考虑了解冻部分
         #----------------------------------------------------------#

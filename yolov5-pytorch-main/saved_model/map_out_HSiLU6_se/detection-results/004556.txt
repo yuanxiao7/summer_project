@@ -1,0 +1,9 @@
+aeroplane 0.4686 0 69 504 275
+aeroplane 0.0148 240 33 504 244
+aeroplane 0.0031 -1 146 338 271
+motorbike 0.1303 1 0 39 24
+motorbike 0.0106 15 0 64 23
+motorbike 0.0084 0 0 16 19
+motorbike 0.0077 17 1 42 23
+motorbike 0.0022 29 3 73 21
+person 0.0015 55 243 76 274
