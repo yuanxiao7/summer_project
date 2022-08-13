@@ -40,10 +40,11 @@ class YoloDataset(Dataset):
 
         #---------------------------------------------------#
         #   训练时进行数据的随机增强
-        #   验证时不进行数据的随机增强
+        #   验证时不进行数据的随机增强  self.mosaic_prob=0.5  self.rand() < self.mosaic_prob 有0.5的概率开启马赛克数据增强
+        #   self.special_aug_ratio控制马赛克数据增强，此时为0.7， 即迭代次数到 Eopch*07 就关掉马赛克数据增强
         #---------------------------------------------------#
         if self.mosaic and self.rand() < self.mosaic_prob and self.epoch_now < self.epoch_length * self.special_aug_ratio:
-            lines = sample(self.annotation_lines, 3)
+            lines = sample(self.annotation_lines, 3)  # 随机选取3张图片，加上index 一共4张
             lines.append(self.annotation_lines[index])
             shuffle(lines)
             image, box  = self.get_random_data_with_Mosaic(lines, self.input_shape)
@@ -191,7 +192,7 @@ class YoloDataset(Dataset):
         
         return image_data, box
     
-    def merge_bboxes(self, bboxes, cutx, cuty):
+    def merge_bboxes(self, bboxes, cutx, cuty):  # 将4部分图片合并一起
         merge_bbox = []
         for i in range(len(bboxes)):
             for box in bboxes[i]:
@@ -237,6 +238,7 @@ class YoloDataset(Dataset):
                 merge_bbox.append(tmp_box)
         return merge_bbox
 
+    # annotation_line所传进来的只是路径和框，split将路径和框分开
     def get_random_data_with_Mosaic(self, annotation_line, input_shape, jitter=0.3, hue=.1, sat=0.7, val=0.4):
         h, w = input_shape
         min_offset_x = self.rand(0.3, 0.7)
@@ -245,13 +247,13 @@ class YoloDataset(Dataset):
         image_datas = [] 
         box_datas   = []
         index       = 0
-        for line in annotation_line:
+        for line in annotation_line:  # 循环进行普通的数据增强
             #---------------------------------#
-            #   每一行进行分割
+            #   每一行进行分割  对图片路径和框进行分割
             #---------------------------------#
             line_content = line.split()
-            #---------------------------------#
             #   打开图片
+            #---------------------------------#
             #---------------------------------#
             image = Image.open(line_content[0])
             image = cvtColor(image)
@@ -259,19 +261,19 @@ class YoloDataset(Dataset):
             #---------------------------------#
             #   图片的大小
             #---------------------------------#
-            iw, ih = image.size
+            iw, ih = image.size  # ih 333  iw 500
             #---------------------------------#
             #   保存框的位置
             #---------------------------------#
             box = np.array([np.array(list(map(int,box.split(',')))) for box in line_content[1:]])
             
             #---------------------------------#
-            #   是否翻转图片
+            #   是否翻转图片    # 左右翻转img 此处可以添加其他类型的翻转来增强数据多样性
             #---------------------------------#
             flip = self.rand()<.5
             if flip and len(box)>0:
                 image = image.transpose(Image.FLIP_LEFT_RIGHT)
-                box[:, [0,2]] = iw - box[:, [2,0]]
+                box[:, [0,2]] = iw - box[:, [2,0]]  # 反转后横坐标180度变换
 
             #------------------------------------------#
             #   对图像进行缩放并且进行长和宽的扭曲
@@ -284,10 +286,12 @@ class YoloDataset(Dataset):
             else:
                 nw = int(scale*w)
                 nh = int(nw/new_ar)
+            # BICUBIC - 图片 resize 时，对所有对输出值相关的所有像素进行三次插值，以得到输出像素；线性插值时，采用对输入图像 4x4 的区域.
             image = image.resize((nw, nh), Image.BICUBIC)
 
             #-----------------------------------------------#
             #   将图片进行放置，分别对应四张分割图片的位置
+            #   0, 1, 2, 3 对应 左下，左上，右上，右下
             #-----------------------------------------------#
             if index == 0:
                 dx = int(w*min_offset_x) - nw
@@ -302,7 +306,7 @@ class YoloDataset(Dataset):
                 dx = int(w*min_offset_x)
                 dy = int(h*min_offset_y) - nh
             
-            new_image = Image.new('RGB', (w,h), (128,128,128))
+            new_image = Image.new('RGB', (w,h), (128,128,128))  # 灰度图 背景图
             new_image.paste(image, (dx, dy))
             image_data = np.array(new_image)
 

@@ -4,7 +4,7 @@ import math
 
 
 
-# SENet的代码实现
+# SENet的代码实现通道注意力集中机制，经全局平均池化，提取出每个channel的信息
 
 class se_block(nn.Module):
     def __init__(self, channel, ratio=16):
@@ -22,11 +22,11 @@ class se_block(nn.Module):
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y)
         y = y.view(b, c, 1, 1)
-        return x * y.expand_as(x)
+        return x * y     # 改动处
 
 
 
-# CBAM的代码实现
+# CBAM的代码实现  通道注意力和空间注意力的结合，互补作用，目前对网络性能最好
 
 class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=8):
@@ -75,7 +75,7 @@ class cbam_block(nn.Module):
         return x
 
 
-# ECA得代码实现
+# ECA的代码实现，关注通道特征，全局平均池化，通道自适应，
 
 class eca_block(nn.Module):
     def __init__(self, channel, b=1, gamma=2):
@@ -94,7 +94,7 @@ class eca_block(nn.Module):
         return x * y.expand_as(x)
 
 
-# CA得代码实现
+# CA得代码实现，特征图宽和高两方面的信息采集，并借助矩阵运算，最后融合
 
 class CA_Block(nn.Module):
     def __init__(self, channel, reduction=16):
@@ -126,13 +126,14 @@ class CA_Block(nn.Module):
 
         s_h = self.sigmoid_h(self.F_h(x_cat_conv_split_h.permute(0, 1, 3, 2)))
         s_w = self.sigmoid_w(self.F_w(x_cat_conv_split_w))
-
+        a1 = s_h.expand_as(x)
+        a2 = s_w.expand_as(x)
         out = x * s_h.expand_as(x) * s_w.expand_as(x)
         return out
 
 
-# model = CA_Block(512)
-# print(model)
-# map = torch.randn(2, 512, 26, 26)
-# if __name__ == "__main__":
-#     outputs = model(map)
+'''model = CA_Block(512)
+print(model)
+map = torch.randn(2, 512, 26, 26)
+if __name__ == "__main__":
+    outputs = model(map)'''

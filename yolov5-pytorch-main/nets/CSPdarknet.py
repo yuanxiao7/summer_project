@@ -1,14 +1,7 @@
 import torch
 import torch.nn as nn
-from utils.activations import FReLU
-import torch.nn.functional as F
+from utils.activations import FReLU, Hardswish
 
-#
-# class HSiLU(nn.Module):  # export-friendly version of nn.Hardswish()
-#     @staticmethod
-#     def forward(x):
-#         return x * F.hardsigmoid(x)  # for torchscript and CoreML
-#         # return x * F.hardtanh(x + 3, 0., 6.) / 6.  # for torchscript, CoreML and ONNX
 
 class SiLU(nn.Module):
     @staticmethod
@@ -16,7 +9,7 @@ class SiLU(nn.Module):
         return x * torch.sigmoid(x)
 
 
-
+# 自定义自动padding模块
 def autopad(k, p=None):
     if p is None:
         p = k // 2 if isinstance(k, int) else [x // 2 for x in k]
@@ -47,8 +40,9 @@ class Conv(nn.Module):
         super(Conv, self).__init__()
         self.conv   = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)  # 当指定p值时按照p值进行填充，当p值为默认时则通过autopad函数进行填充
         self.bn     = nn.BatchNorm2d(c2, eps=0.001, momentum=0.03)
-        self.act    = SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())  # 加入非线性因素
-        # self.act    = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act    = SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())  # 加入非线性因素
+        self.act    = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act    = Hardswish() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
         # 加入非线性因素  frelu目前除了召回率其他都比baseline好的模型
 
     def forward(self, x):
@@ -68,7 +62,7 @@ class Bottleneck(nn.Module):
 
     def forward(self, x):
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))  # 判断输入和输出通道数是否相同，相同就cat
-    # 先进行卷积一在进行卷积二，若x与卷积二输出同且shortcut为ture就返回x+conv12的cat，否则就只返回输出
+    # 先进行卷积一再进行卷积二，若x与卷积二输出同且shortcut为ture就返回x+conv12的cat，否则就只返回输出
 
 class C3(nn.Module):
     # CSP Bottleneck with 3 convolutions

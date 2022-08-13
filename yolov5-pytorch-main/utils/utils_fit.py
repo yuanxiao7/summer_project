@@ -14,6 +14,7 @@ def fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callbac
     if local_rank == 0:
         print('Start Train')
         pbar = tqdm(total=epoch_step,desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
+        # postfix 字条中显示得变化的loss等值  0.3为更新最小时间间隔
     model_train.train()
     for iteration, batch in enumerate(gen):
         if iteration >= epoch_step:
@@ -52,7 +53,7 @@ def fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callbac
         else:
             from torch.cuda.amp import autocast
             with autocast():
-                #----------------------#
+                 #----------------------#
                 #   前向传播
                 #----------------------#
                 outputs         = model_train(images)
@@ -77,7 +78,7 @@ def fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callbac
 
         loss += loss_value.item()
         
-        if local_rank == 0:
+        if local_rank == 0:   #  将loss和lr放在字典中，再把它放到tqdm进度条上显示loss lr
             pbar.set_postfix(**{'loss'  : loss / (iteration + 1), 
                                 'lr'    : get_lr(optimizer)})
             pbar.update(1)

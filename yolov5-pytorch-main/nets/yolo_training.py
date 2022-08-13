@@ -8,7 +8,7 @@ import torch.nn as nn
 
 
 class YOLOLoss(nn.Module):
-    def __init__(self, anchors, num_classes, input_shape, cuda, anchors_mask = [[6,7,8], [3,4,5], [0,1,2]], label_smoothing = 0):
+    def __init__(self, anchors, num_classes, input_shape, cuda, anchors_mask = [[6,7,8], [3,4,5], [0,1,2]], label_smoothing = 0, focal_loss = True, alpha = 0.25, gamma = 2):
         super(YOLOLoss, self).__init__()
         #-----------------------------------------------------------#
         #   20x20的特征层对应的anchor是[116,90],[156,198],[373,326]
@@ -22,9 +22,14 @@ class YOLOLoss(nn.Module):
         self.anchors_mask   = anchors_mask
         self.label_smoothing = label_smoothing
 
+        self.focal_loss = focal_loss
+        self.focal_loss_ratio = 10
+        self.alpha = alpha
+        self.gamma = gamma
+
         self.threshold      = 4
 
-        self.balance        = [0.4, 1.0, 4]
+        self.balance        = [0.4, 1.0, 4]  # 小框种类多，加权更大
         self.box_ratio      = 0.05
         self.obj_ratio      = 1 * (input_shape[0] * input_shape[1]) / (640 ** 2)
         self.cls_ratio      = 0.5 * (num_classes / 80)
@@ -36,10 +41,10 @@ class YOLOLoss(nn.Module):
         result = (result <= t_max).float() * result + (result > t_max).float() * t_max
         return result
 
-    def MSELoss(self, pred, target):
+    def MSELoss(self, pred, target):        # 此函数没有用到
         return torch.pow(pred - target, 2)
 
-    def BCELoss(self, pred, target):
+    def BCELoss(self, pred, target):  # tensoer [391, 20]
         epsilon = 1e-7
         pred    = self.clip_by_tensor(pred, epsilon, 1.0 - epsilon)  # 预测归一化
         output  = - target * torch.log(pred) - (1.0 - target) * torch.log(1.0 - pred)
@@ -184,23 +189,38 @@ class YOLOLoss(nn.Module):
         if n != 0:
             #---------------------------------------------------------------#
             #   计算预测结果和真实结果的giou，计算对应有真实框的先验框的giou损失
-            #                         loss_cls计算对应有真实框的先验框的分类损失
+            #   y_true[..., 4] == 1 取出有物体的框， loss_cls计算对应有真实框的先验框的分类损失
             #----------------------------------------------------------------#
             giou        = self.box_giou(pred_boxes, y_true[..., :4]).type_as(x)
             loss_loc    = torch.mean((1 - giou)[y_true[..., 4] == 1])
             loss_cls    = torch.mean(self.BCELoss(pred_cls[y_true[..., 4] == 1], self.smooth_labels(y_true[..., 5:][y_true[..., 4] == 1], self.label_smoothing, self.num_classes)))
+            aaa = y_true.cpu().numpy()
             loss        += loss_loc * self.box_ratio + loss_cls * self.cls_ratio
             #-----------------------------------------------------------#
             #   计算置信度的loss
             #   也就意味着先验框对应的预测框预测的更准确
             #   它才是用来预测这个物体的。
             #-----------------------------------------------------------#
-            tobj        = torch.where(y_true[..., 4] == 1, giou.detach().clamp(0), torch.zeros_like(y_true[..., 4]))
+            tobj        = torch.where(y_true[..., 4] == 1, giou.detach().clamp(0), torch.zeros_like(y_true[..., 4]))  # (12, 3, 20, 20)
         else:
             tobj        = torch.zeros_like(y_true[..., 4])
-        loss_conf   = torch.mean(self.BCELoss(conf, tobj))
-        
+
+
+
+        if self.focal_loss:
+            pos_neg_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) * self.alpha, torch.ones_like(conf) * (1 - self.alpha))
+            hard_easy_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) - conf, conf) ** self.gamma
+            loss_conf = torch.mean((self.BCELoss(conf, tobj) * pos_neg_ratio * hard_easy_ratio)) * self.focal_loss_ratio
+        else:
+            loss_conf = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
+
+
+
+        print("==="*40)
+        print(loss_conf)
+        print("===" * 40)
         loss        += loss_conf * self.balance[l] * self.obj_ratio
+        print("loss : ", loss)
         # if n != 0:
         #     print(loss_loc * self.box_ratio, loss_cls * self.cls_ratio, loss_conf * self.balance[l] * self.obj_ratio)
         return loss
@@ -217,6 +237,7 @@ class YOLOLoss(nn.Module):
         else:
             return [[0, 0], [1, 0], [0, -1]]
 
+    # 这里的get_target函数不用，用的是dataloader里面的
     def get_target(self, l, targets, anchors, in_h, in_w):
         #-----------------------------------------------------#
         #   计算一共有多少张图片
@@ -421,7 +442,9 @@ def weights_init(net, init_type='normal', init_gain = 0.02):
     print('initialize network with %s type' % init_type)
     net.apply(init_func)
 
-def get_lr_scheduler(lr_decay_type, lr, min_lr, total_iters, warmup_iters_ratio = 0.05, warmup_lr_ratio = 0.1, no_aug_iter_ratio = 0.05, step_num = 10):
+
+# 学习率自动调整
+def  get_lr_scheduler(lr_decay_type, lr, min_lr, total_iters, warmup_iters_ratio = 0.05, warmup_lr_ratio = 0.1, no_aug_iter_ratio = 0.05, step_num = 10):
     def yolox_warm_cos_lr(lr, min_lr, total_iters, warmup_total_iters, warmup_lr_start, no_aug_iter, iters):
                      #                                   3                      0.1
         if iters <= warmup_total_iters:

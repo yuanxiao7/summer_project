@@ -59,10 +59,12 @@ def get_lr(optimizer):
         i_list = [i for i in optimizer.param_groups[0].keys()]
         return param_group['lr']
 
-def preprocess_input(image):  # 图片归一化处理
+ # 图片归一化处理
+def preprocess_input(image):
     image /= 255.0
     return image
 
+# 打印出config
 def show_config(**kwargs):
     print('Configurations:')
     print('-' * 70)
@@ -71,7 +73,8 @@ def show_config(**kwargs):
     for key, value in kwargs.items():
         print('|%25s | %40s|' % (str(key), str(value)))
     print('-' * 70)
-        
+
+# 权重下载
 def download_weights(backbone, phi, model_dir="./model_data"):  # 这里是下载主干网络的权重
     import os
     from torch.hub import load_state_dict_from_url

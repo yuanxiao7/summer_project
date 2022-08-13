@@ -1,0 +1,7 @@
+boat 0.0015 316 19 495 302
+pottedplant 0.7727 3 24 362 336
+pottedplant 0.0100 7 6 499 108
+pottedplant 0.0059 284 8 500 316
+pottedplant 0.0042 1 132 209 329
+pottedplant 0.0035 122 41 489 325
+pottedplant 0.0033 115 103 353 329

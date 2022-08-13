@@ -52,7 +52,7 @@ if __name__ == "__main__":
     #       在终端中输入    CUDA_VISIBLE_DEVICES=0,1 python train.py
     #   DDP模式：
     #       设置            distributed = True
-    #       在终端中输入    CUDA_VISIBLE_DEVICES=2,3 python -m torch.distributed.launch --nproc_per_node=2 train.py
+    #       在终端中输入    CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 train.py
     #---------------------------------------------------------------------#
     distributed     = False
     #---------------------------------------------------------------------#
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     #                   convnext_small
     #                   swin_transfomer_tiny
     #------------------------------------------------------#
-    pad             = 1     # 注意力集中机制调用参数！！！
+    pad             = 2     # 注意力集中机制调用参数！！！
     backbone        = 'cspdarknet'
     #----------------------------------------------------------------------------------------------------------------------------#
     #   pretrained      是否使用主干网络的预训练权重，此处使用的是True主干的权重，因此是在模型构建的时候进行加载的。
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     #
     #   special_aug_ratio   参考YoloX，由于Mosaic生成的训练图片，远远脱离自然图片的真实分布。
     #                       当mosaic=True时，本代码会在special_aug_ratio范围内开启mosaic。
-    #                       默认为前70%个epoch，100个世代会开启70个世代。
+    #                       默认为总Epoch的前70%个epoch，100个世代会开启70个世代。
     #------------------------------------------------------------------#
     mosaic              = True
     mosaic_prob         = 0.5
@@ -139,6 +139,7 @@ if __name__ == "__main__":
     special_aug_ratio   = 0.7
     #------------------------------------------------------------------#
     #   label_smoothing     标签平滑。一般0.01以下。如0.01、0.005。  当其为0时，表示没有使用标签平滑操作
+    #   主要是防止过拟合
     #------------------------------------------------------------------#
     label_smoothing     = 0
 
@@ -261,7 +262,7 @@ if __name__ == "__main__":
     ngpus_per_node  = torch.cuda.device_count()  # 获取GPU的数量
     if distributed:
         dist.init_process_group(backend="nccl")  # 通信后端采用的是nccl（NVIDIA推出的）
-        local_rank  = int(os.environ["LOCAL_RANK"])  # node上上相对进程的序号
+        local_rank  = int(os.environ["LOCAL_RANK"])  # node上相对进程的序号
         rank        = int(os.environ["RANK"])    # 整个分布式上的任务中的进程序号
         device      = torch.device("cuda", local_rank)
         if local_rank == 0:
@@ -292,7 +293,8 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, phi, pad, backbone, pretrained=pretrained, input_shape=input_shape)  # 爬到！！！
+    model = YoloBody(anchors_mask, num_classes, phi, pad, backbone, pretrained=pretrained, input_shape=input_shape)  # pad ！！！
+    print(model)
     if not pretrained:
         weights_init(model)
     if model_path != '':
@@ -330,7 +332,7 @@ if __name__ == "__main__":
     #----------------------#
     yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing)
     #----------------------#
-    #   记录Loss
+    #   记录Loss   暂且认为这里是初始化
     #----------------------#
     if local_rank == 0:
         time_str        = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')
@@ -475,7 +477,7 @@ if __name__ == "__main__":
             ema.updates     = epoch_step * Init_Epoch  # 指数平均数指标
 
         #---------------------------------------#
-        #   构建数据集加载器。dataset打包数据，dataloader导入数据
+        #   构建数据集加载器 dataset打包数据
         #---------------------------------------#
         train_dataset   = YoloDataset(train_lines, input_shape, num_classes, anchors, anchors_mask, epoch_length=UnFreeze_Epoch, \
                                         mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=True, special_aug_ratio=special_aug_ratio)
@@ -492,6 +494,7 @@ if __name__ == "__main__":
             val_sampler     = None
             shuffle         = True
 
+        # dataloader接收dataset的数据，并返回打包好的迭代器
         gen             = DataLoader(train_dataset, shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True,
                                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=train_sampler)
         gen_val         = DataLoader(val_dataset  , shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
@@ -512,7 +515,7 @@ if __name__ == "__main__":
         for epoch in range(Init_Epoch, UnFreeze_Epoch):
             #---------------------------------------#
             #   如果模型有冻结学习部分
-            #   则解冻，并设置参数
+            #   则解冻，并设置参数   7理解 下面的not 可看作 not ( UnFreeze_flag and Freeze_Train)
             #---------------------------------------#
             if epoch >= Freeze_Epoch and not UnFreeze_flag and Freeze_Train:
                 batch_size = Unfreeze_batch_size

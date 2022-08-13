@@ -36,6 +36,7 @@ class YoloBody(nn.Module):
             #---------------------------------------------------#
             self.backbone   = CSPDarknet(base_channels, base_depth, phi, pretrained)
             # 此处实例化backbone  pretrained为true直接用up主的网络练
+
         else:
             #---------------------------------------------------#
             #   在这里可以插入自己改的网络

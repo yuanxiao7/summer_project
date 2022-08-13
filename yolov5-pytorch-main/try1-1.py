@@ -4,7 +4,7 @@ import torch.nn as nn
 import os
 from multiprocessing import Process
 import cv2
-
+from torch.nn import functional as F
 # %matplotlib inline
 import pandas as pd
 from scipy import stats
@@ -15,24 +15,33 @@ import numpy as np
 
 
 
-content = torch.load('weights/best_epoch_weights.pth')
-print(content.keys())
+# content = torch.load('weights/best_epoch_weights.pth')
+# print(content.keys())
 
-# def sigmoid(x):
-#     return 1/(1+np.exp(-x))
-#
-# x = np.linspace(-10,10)
-# ##### 绘制sigmoid图像
-# fig = plt.figure()
-# y_sigmoid = 1/(1+np.exp(-x))
-# ax = fig.add_subplot(321)
-# ax.plot(x,y_sigmoid,color='blue')
-# ax.grid()
-# ax.set_title('(a) Sigmoid')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
+
+class Hardswish(nn.Module):
+    # Hard-SiLU activation
+    @staticmethod
+    def forward(x):
+        return x * F.hardsigmoid(x)  # for TorchScript and CoreML
+        # return x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0  # for TorchScript, CoreML and ONNX
+
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
+
+x = np.linspace(-10,10)
+x = torch.tensor(x)
+##### 绘制sigmoid图像
+fig = plt.figure()
+y_sigmoid = x * F.hardtanh(x + 3, 0.0, 6.0) / 6.0
+ax = fig.add_subplot(321)
+ax.plot(x,y_sigmoid,color='blue')
+ax.grid()
+# ax.set_title('F.hardtanh(x + 3, 0.0, 6.0) / 6.0')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
 #
 # ##### 绘制Tanh图像
 # ax = fig.add_subplot(322)
@@ -44,7 +53,7 @@ print(content.keys())
 # ax.spines['top'].set_color('none') # 去除上边界线
 # ax.spines['bottom'].set_position(('data',0))
 # ax.spines['left'].set_position(('data',0))
-#
+
 # ##### 绘制Relu图像
 # ax = fig.add_subplot(323)
 # y_relu = np.array([0*item  if item<0 else item for item in x ])
@@ -94,10 +103,66 @@ print(content.keys())
 # ax.spines['top'].set_color('none') # 去除上边界线
 # ax.spines['bottom'].set_position(('data',0))
 # ax.spines['left'].set_position(('data',0))
-#
-# plt.tight_layout()
-# plt.savefig('Activation.png')
-# plt.show()
+
+plt.tight_layout()
+plt.savefig('Activation.png')
+plt.show()
+
+
+
+
+
+
+'''        if n != 0:
+            #---------------------------------------------------------------#
+            #   计算预测结果和真实结果的giou，计算对应有真实框的先验框的giou损失
+            #   y_true[..., 4] == 1 取出有物体的框， loss_cls计算对应有真实框的先验框的分类损失
+            #----------------------------------------------------------------#
+            giou        = self.box_giou(pred_boxes, y_true[..., :4]).type_as(x)
+            print("===" * 30)  #device='cuda:0', dtype=torch.float16, grad_fn=<ToCopyBackward0>
+            print(giou)
+            loss_loc    = torch.mean((1 - giou)[y_true[..., 4] == 1])
+            loss_cls    = torch.mean(self.BCELoss(pred_cls[y_true[..., 4] == 1], self.smooth_labels(y_true[..., 5:][y_true[..., 4] == 1], self.label_smoothing, self.num_classes)))
+            aaa = y_true.cpu().numpy()
+            loss        += loss_loc * self.box_ratio + loss_cls * self.cls_ratio
+            #-----------------------------------------------------------#
+            #   计算置信度的loss
+            #   也就意味着先验框对应的预测框预测的更准确
+            #   它才是用来预测这个物体的。
+            #-----------------------------------------------------------#
+            tobj        = torch.where(y_true[..., 4] == 1, giou.detach().clamp(0), torch.zeros_like(y_true[..., 4]))  # (12, 3, 20, 20)
+            print("==="*30)  
+            print(tobj)   # device='cuda:0', dtype=torch.float16
+        else:
+            tobj        = torch.zeros_like(y_true[..., 4])
+        print("==="*30)
+        print(conf)    # device='cuda:0', dtype=torch.float16, grad_fn=<SigmoidBackward0>
+        loss_conf   = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
+        print("===" * 30)
+        print(loss_conf)   # device='cuda:0', grad_fn=<MeanBackward0>
+        print("===" * 30)
+
+
+
+        if self.focal_loss:
+            pos_neg_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) * self.alpha, torch.ones_like(conf) * (1 - self.alpha))
+            hard_easy_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) - conf, conf) ** self.gamma
+            loss_conf = torch.mean((self.BCELoss(conf, tobj) * pos_neg_ratio * hard_easy_ratio)) * self.focal_loss_ratio
+        else:
+            loss_conf = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
+
+            
+
+
+
+
+
+'''
+
+
+
+
+
 
 
 # import matplotlib.pyplot as plt

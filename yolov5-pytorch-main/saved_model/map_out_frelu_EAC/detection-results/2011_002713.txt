@@ -1,0 +1,8 @@
+bicycle 0.7418 40 33 482 356
+bicycle 0.0022 36 87 204 281
+bicycle 0.0010 -1 13 126 317
+bottle 0.0043 240 168 295 243
+pottedplant 0.0097 121 1 309 150
+pottedplant 0.0035 72 -1 430 198
+pottedplant 0.0020 4 -16 504 285
+pottedplant 0.0018 324 4 501 232
