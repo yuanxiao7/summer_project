@@ -1,2 +1,0 @@
-tvmonitor 242 6 471 372
-tvmonitor 2 6 245 382

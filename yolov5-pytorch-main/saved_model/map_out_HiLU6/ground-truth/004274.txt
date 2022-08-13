@@ -1,2 +1,0 @@
-tvmonitor 272 5 500 298
-pottedplant 1 1 270 298

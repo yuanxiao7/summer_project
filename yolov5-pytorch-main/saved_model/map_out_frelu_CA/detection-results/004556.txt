@@ -1,6 +1,0 @@
-aeroplane 0.8951 0 54 502 269
-aeroplane 0.0014 2 157 185 276
-motorbike 0.0120 0 -2 38 22
-motorbike 0.0076 0 -3 15 21
-motorbike 0.0022 7 -1 81 23
-motorbike 0.0015 0 0 9 21

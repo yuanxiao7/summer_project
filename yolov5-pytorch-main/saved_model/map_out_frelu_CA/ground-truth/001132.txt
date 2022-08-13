@@ -1,2 +1,0 @@
-cat 21 93 404 286
-sofa 34 46 500 333 difficult

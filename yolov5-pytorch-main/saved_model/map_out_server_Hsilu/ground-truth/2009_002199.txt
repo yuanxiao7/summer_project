@@ -1,2 +1,0 @@
-aeroplane 219 30 452 104
-aeroplane 33 236 260 322

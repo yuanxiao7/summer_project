@@ -1,4 +1,0 @@
-person 0.0065 229 -3 584 337
-tvmonitor 0.6762 0 1 125 229
-tvmonitor 0.0017 0 19 78 200
-tvmonitor 0.0012 0 5 216 296

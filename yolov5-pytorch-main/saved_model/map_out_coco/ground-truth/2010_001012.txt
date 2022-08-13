@@ -1,3 +1,0 @@
-cat 132 61 500 375
-chair 202 1 500 375 difficult
-chair 1 1 90 156 difficult

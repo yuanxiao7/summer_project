@@ -1,3 +1,0 @@
-sofa 2 308 333 462 difficult
-person 8 203 186 496
-diningtable 98 340 333 499

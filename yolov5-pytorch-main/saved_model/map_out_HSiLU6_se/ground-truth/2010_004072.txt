@@ -1,2 +1,0 @@
-bicycle 46 123 282 296
-pottedplant 206 138 305 199

@@ -1,3 +1,0 @@
-diningtable 143 319 468 375 difficult
-chair 117 316 180 375 difficult
-tvmonitor 163 223 265 321

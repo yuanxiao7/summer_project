@@ -1,2 +1,0 @@
-pottedplant 325 390 375 485
-pottedplant 228 426 301 500

@@ -1,2 +1,0 @@
-bus 32 67 439 253
-person 304 113 333 156 difficult

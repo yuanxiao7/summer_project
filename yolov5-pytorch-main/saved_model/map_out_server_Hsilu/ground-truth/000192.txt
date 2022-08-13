@@ -1,2 +1,0 @@
-person 116 64 356 375
-chair 2 212 49 375 difficult

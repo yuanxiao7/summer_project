@@ -1,2 +1,0 @@
-aeroplane 122 245 325 326
-aeroplane 2 325 244 500 difficult

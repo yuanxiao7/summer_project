@@ -1,3 +1,0 @@
-car 307 287 486 347
-pottedplant 44 288 61 304 difficult
-pottedplant 25 284 37 306 difficult

@@ -1,2 +1,0 @@
-car 11 39 496 367
-car 1 82 109 177 difficult

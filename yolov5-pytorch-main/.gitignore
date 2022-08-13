@@ -8,6 +8,10 @@ lfw/
 logs/
 model_data/
 .temp_map_out/
+model_ignore/
+saved_model/
+weight/
+server_weights/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
