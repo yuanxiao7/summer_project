@@ -24,6 +24,8 @@ https://zhuanlan.zhihu.com/p/35975956
 
 
 
+----
+
 ## 数据集web
 
 https://blog.csdn.net/luochao5862426/article/details/79564311
@@ -36,7 +38,9 @@ https://data.gov/
 
 
 
-### 关键点检测
+---
+
+## 关键点检测
 
 穿戴防护服和防护设备的合规检测
 
@@ -44,9 +48,9 @@ https://aistudio.baidu.com/aistudio/projectdetail/4061642?channelType=0&channel=
 
 
 
+---
 
-
-### 疲劳检测
+## 疲劳检测
 
 服创时采用的model
 
@@ -60,7 +64,7 @@ https://github.com/PengfeiM/Fatigue-Driven-Detection-Based-on-CNN
 
 - https://aistudio.baidu.com/aistudio/projectdetail/3494528?channelType=0&channel=0
 
-### yolo系列
+## yolo系列
 
 https://github.com/Sharpiless/yolox-deepsort  
 
@@ -70,7 +74,7 @@ PP-YOLO识别DIOR遥感数据集
 
 https://aistudio.baidu.com/aistudio/projectdetail/1480790?channelType=0&channel=0
 
-
+---
 
 
 
@@ -78,11 +82,11 @@ https://aistudio.baidu.com/aistudio/projectdetail/1480790?channelType=0&channel=
 
 https://www.sohu.com/a/163287299_466143
 
+---
 
 
 
-
-### 遥感检测
+## 遥感检测
 
 #### 地形检测数据集
 
@@ -94,9 +98,11 @@ https://aistudio.baidu.com/aistudio/projectdetail/2089732
 
 https://aistudio.baidu.com/aistudio/projectdetail/1480790?channelType=0&channel=0
 
+---
 
 
-### 医学影像
+
+# 医学影像
 
 『医学影像』基于Unet+++实现脊柱MRI定位（上）
 
@@ -112,11 +118,7 @@ https://zhuanlan.zhihu.com/p/144341688
 
 https://new.qq.com/omn/20210218/20210218A0A9BU00.html
 
-
-
-
-
-
+---
 
 # 最后用
 
@@ -135,4 +137,14 @@ https://github.com/dyh/unbox_yolov5_deepsort_counting车辆行人检测
 https://blog.csdn.net/weixin_44936889/category_11268335.html?utm_source=BWXQ_bottombtn&spm=1001.2101.3001.4225用Windows要付费
 
 https://blog.csdn.net/weixin_44936889/article/details/110661862
+
+
+
+## here!
+
+**The model of my project is yolov5-v5.0.**
+
+ You can click connect below and jump to GitHub .
+
+- [yolov5-v5.0](https://github.com/bubbliiiing/yolov5-pytorch)
 
