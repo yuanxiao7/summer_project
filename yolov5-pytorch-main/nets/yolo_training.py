@@ -206,21 +206,23 @@ class YOLOLoss(nn.Module):
             tobj        = torch.zeros_like(y_true[..., 4])
 
 
+        #
+        # if self.focal_loss:
+        #     pos_neg_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) * self.alpha, torch.ones_like(conf) * (1 - self.alpha))
+        #     hard_easy_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) - conf, conf) ** self.gamma
+        #     loss_conf = torch.mean((self.BCELoss(conf, tobj) * pos_neg_ratio * hard_easy_ratio)) * self.focal_loss_ratio
+        # else:
+        #     loss_conf = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
 
-        if self.focal_loss:
-            pos_neg_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) * self.alpha, torch.ones_like(conf) * (1 - self.alpha))
-            hard_easy_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) - conf, conf) ** self.gamma
-            loss_conf = torch.mean((self.BCELoss(conf, tobj) * pos_neg_ratio * hard_easy_ratio)) * self.focal_loss_ratio
-        else:
-            loss_conf = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
+        loss_conf = torch.mean(self.BCELoss(conf, tobj))  # (12, 3, 20, 20)
 
+        # print("==="*40)
+        # print(loss_conf)
+        # print("===" * 40)
 
-
-        print("==="*40)
-        print(loss_conf)
-        print("===" * 40)
         loss        += loss_conf * self.balance[l] * self.obj_ratio
-        print("loss : ", loss)
+
+        # print("loss : ", loss)
         # if n != 0:
         #     print(loss_loc * self.box_ratio, loss_cls * self.cls_ratio, loss_conf * self.balance[l] * self.obj_ratio)
         return loss

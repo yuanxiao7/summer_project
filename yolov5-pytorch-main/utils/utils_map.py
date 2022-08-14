@@ -420,10 +420,12 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
         with open(TEMP_FILES_PATH + "/" + class_name + "_dr.json", 'w') as outfile:
             json.dump(bounding_boxes, outfile)
 
+
     sum_AP = 0.0
     sum_F1 = 0.0
     sum_rec = 0.0
     sum_prec = 0.0
+
     ap_dictionary = {}
     lamr_dictionary = {}
     with open(RESULTS_FILES_PATH + "/results.txt", 'w') as results_file:
@@ -578,10 +580,12 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
             ap, mrec, mprec = voc_ap(rec[:], prec[:])
             F1  = np.array(rec)*np.array(prec)*2 / np.where((np.array(prec)+np.array(rec))==0, 1, (np.array(prec)+np.array(rec)))
 
+
             sum_AP  += ap
             sum_F1 += F1[score_threhold_idx]
             sum_rec += rec[score_threhold_idx]*100
             sum_prec += prec[score_threhold_idx]*100
+
             text    = "{0:.2f}%".format(ap*100) + " = " + class_name + " AP " #class_name + " AP = {0:.2f}%".format(ap*100)
 
             if len(prec)>0:
@@ -662,6 +666,9 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
             print("未检测到任何种类，请检查标签信息与get_map.py中的classes_path是否修改。")
             return 0
         results_file.write("\n# mAP of all classes\n")
+
+
+        # 平均指标打印！！！
         mAP     = sum_AP / n_classes
         text    = "mAP = {0:.2f}%".format(mAP*100)
         results_file.write(text + "\n")

@@ -180,7 +180,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     Init_Epoch          = 0
     Freeze_Epoch        = 10
-    Freeze_batch_size   = 8 #
+    Freeze_batch_size   = 8  #
     #------------------------------------------------------------------#
     #   解冻阶段训练参数
     #   此时模型的主干不被冻结了，特征提取网络会发生改变
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     model = YoloBody(anchors_mask, num_classes, phi, pad, backbone, pretrained=pretrained, input_shape=input_shape)  # pad ！！！
     print(model)
     if not pretrained:
-        weights_init(model)
+        weights_init(model)  # 初始化模型
     if model_path != '':
         #------------------------------------------------------#
         #   权值文件请看README，百度网盘下载
@@ -328,11 +328,11 @@ if __name__ == "__main__":
             print("\n\033[1;33;44m温馨提示，head部分没有载入是正常现象，Backbone部分没有载入是错误的。\033[0m")
 
     #----------------------#
-    #   获得损失函数
+    #   获得损失函数  暂且认为这里是初始化
     #----------------------#
     yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing)
     #----------------------#
-    #   记录Loss   暂且认为这里是初始化
+    #   记录Loss
     #----------------------#
     if local_rank == 0:
         time_str        = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')

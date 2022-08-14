@@ -76,7 +76,7 @@ def fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callbac
         if ema:
             ema.update(model_train)
 
-        loss += loss_value.item()
+        loss += loss_value.item()  # 返回一个np整型
         
         if local_rank == 0:   #  将loss和lr放在字典中，再把它放到tqdm进度条上显示loss lr
             pbar.set_postfix(**{'loss'  : loss / (iteration + 1), 
