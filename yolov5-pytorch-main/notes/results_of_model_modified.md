@@ -2,7 +2,7 @@
 
 
 
-## 改动一、激活函数
+## 改进一、激活函数
 
 
 
@@ -136,7 +136,7 @@ score = 0.5
 
 
 
-## 改动二、添加注意力集中机制
+## 改进二、添加注意力集中机制
 
 - **注：检测展示图是score = 0.4，注意力模块是backbone的输出，即neck的输入添加的**
 
@@ -302,17 +302,48 @@ score = 0.4
 
 
 
-## 改动三、损失函数
+## 改进三、损失函数
 
 ### focal loss
 
+这里是在FPeLU_CBAM的基础上修改的损失函数，focal loss这个损失函数看到过很多次，它是基于交叉熵损失函数上修改的一个新的损失函数，网上对他的评论褒贬不一，于是就去实验一下，看看这个focus loss的鲁棒性，跑完训练后，并没有明显的提升，反而精度还掉了一点点。说实话，理论上，这个loss给正负样本不同的加权，应该会有些许提升，不是很理解，但事实确实没有涨点。
+
+此次模型指标如下
+
+| 模型 \ 指标 | map    | F1     | recall | precision |
+| ----------- | ------ | ------ | ------ | --------- |
+| BCEloss     | 89.10% | 82.62% | 74.49% | 93.50%    |
+| focus loss  | 88.46% | 73.69% | 61.18% | 95.48%    |
 
 
 
-
-![image-20220809171521824](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220809171521824.png)
-
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220809171521824.png" alt="image-20220809171521824" style="zoom: 80%;" />
 
 
 
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821211017341.png" alt="image-20220821211017341" style="zoom:67%;" />
 
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821211204230.png" alt="image-20220821211204230" style="zoom:80%;" />
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821210940923.png" alt="image-20220821210940923" style="zoom:67%;" />
+
+
+
+## 改进四、网络结构
+
+因为小伙伴们太卷了，于是我也开始更改主干网络，我把focusnet换成了两个标准卷积+bn+act和一个深度可分离组成的小组件，把中间除了特征融合出的卷积，其他都换成深度可分离卷积，因为前面用了小组件，稍稍减少了resblock，并把resblock的特征融合改成add。跑了300个epoch，测试loss在100epoch左右开始平稳，而train loss缓慢下降，模型开始收敛，最好的模型是在140个epoch左右。模型的参数量几乎减少一半，但是的到比baseline好的检测效果。
+
+
+
+| 模型 \ 指标 | map    | F1     | recall | precision |
+| ----------- | ------ | ------ | ------ | --------- |
+| baseline    | 83.10% | 79.14% | 74.47% | 84.88%    |
+| change_net  | 90.51% | 85.13% | 78.33% | 93.96%    |
+
+![image-20220820113123397](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220820113123397.png)
+
+
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821215531935.png" alt="image-20220821215531935" style="zoom:80%;" />
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821215636305.png" alt="image-20220821215636305" style="zoom: 50%;" />

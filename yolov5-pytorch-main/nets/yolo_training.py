@@ -206,7 +206,7 @@ class YOLOLoss(nn.Module):
             tobj        = torch.zeros_like(y_true[..., 4])
 
 
-        #
+
         # if self.focal_loss:
         #     pos_neg_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) * self.alpha, torch.ones_like(conf) * (1 - self.alpha))
         #     hard_easy_ratio = torch.where(y_true[..., 4] == 1, torch.ones_like(conf) - conf, conf) ** self.gamma

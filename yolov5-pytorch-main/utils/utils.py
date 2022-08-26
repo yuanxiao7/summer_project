@@ -1,6 +1,8 @@
 import numpy as np
 from PIL import Image
-
+import cv2
+import torch
+from torchvision.transforms import *
 
 #---------------------------------------------------------#
 #   将图像转换成RGB图像，防止灰度图在预测时报错。
@@ -95,3 +97,65 @@ def download_weights(backbone, phi, model_dir="./model_data"):  # 这里是下�
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
     load_state_dict_from_url(url, model_dir)
+
+
+
+
+
+class Cutout(object):
+    """Randomly mask out one or more patches from an image.
+    Args:
+        n_holes (int): Number of patches to cut out of each image.
+        length (int): The length (in pixels) of each square patch.
+    """
+
+    def __init__(self, n_holes, length, fill_value):
+        self.n_holes = n_holes
+        self.length = length
+        self.fill_value = fill_value
+
+    def __call__(self, img):
+        """
+        Args:
+            img (Tensor): Tensor image of size (C, H, W).
+        Returns:
+            Tensor: Image with n_holes of dimension length x length cut out of it.
+        """
+        h = img.size(1)
+        w = img.size(2)
+
+        mask = np.ones((h, w), np.float32)
+
+        for n in range(self.n_holes):
+            y = np.random.randint(h)
+            x = np.random.randint(w)
+
+            y1 = np.clip(y - self.length // 2, 0, h)
+            y2 = np.clip(y + self.length // 2, 0, h)
+            x1 = np.clip(x - self.length // 2, 0, w)
+            x2 = np.clip(x + self.length // 2, 0, w)
+
+            mask[y1: y2, x1: x2] = self.fill_value
+
+
+        mask = torch.from_numpy(mask)
+        mask = mask.expand_as(img)
+        img = img * mask
+
+        return img
+
+
+# if __name__ == "__main__":
+#     # # 2、Cutout
+#     img = cv2.imread("img/1_2.jpg")
+#     save_path = "1_21.jpg"
+#     transform = Compose([
+#         transforms.ToTensor(),
+#         Cutout(n_holes=30, length=10, fill_value=0.)  # length 控制擦除范围，fill_value控制用什么值进行擦除
+#     ])
+#     # transform暂且把他看作一个已经实例化的函数，将多步骤给合在一起的函数
+#     img2 = transform(img=img)
+#     img2 = img2.numpy().transpose([1, 2, 0])
+#     cv2.imwrite(save_path, img2)
+#     cv2.imshow("test", img2)
+#     cv2.waitKey(0)

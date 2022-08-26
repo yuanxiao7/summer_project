@@ -162,7 +162,7 @@ class DecodeBox():
         box_corner[:, :, 3] = prediction[:, :, 1] + prediction[:, :, 3] / 2
         prediction[:, :, :4] = box_corner[:, :, :4]
 
-        output = [None for _ in range(len(prediction))]  # output = [None]
+        output = [None for _ in range(len(prediction))]  # output用于装非极大值抑制后剩下的先验框 一开始没有，就为[None]
         # print(prediction.shape)  # torch.Size([1, 25200, 85])
         # print(output)
         for i, image_pred in enumerate(prediction):   # for循环一个一个的检测框框内部情况
@@ -173,12 +173,12 @@ class DecodeBox():
             #   class_conf  [num_anchors, 1]    种类置信度
             #   class_pred  [num_anchors, 1]    种类
             #----------------------------------------------------------#
-            class_conf, class_pred = torch.max(image_pred[:, 5:5 + num_classes], 1, keepdim=True)
-            # print("conf ", class_conf.shape)  # conf  torch.Size([25200, 1])
-            # print("pred ", class_pred.shape)  # pred  torch.Size([25200, 1])
+            class_conf, class_pred = torch.max(image_pred[:, 5:5 + num_classes], 1, keepdim=True)  # 留下的是那一个网格对应张量里面的分支最大的类的值
+            # print("conf ", class_conf.shape)  # conf  torch.Size([25200, 1])  预测值
+            # print("pred ", class_pred.shape)  # pred  torch.Size([25200, 1])  预测值下标
 
             #----------------------------------------------------------#
-            #   利用置信度进行第一轮筛选  得到大于阈值的框
+            #   利用置信度进行第一轮筛选  得到大于阈值的框   是否为物体的置信度和种类置信度相乘
             #----------------------------------------------------------#
 
             conf_mask = (image_pred[:, 4] * class_conf[:, 0] >= conf_thres).squeeze()
@@ -191,31 +191,31 @@ class DecodeBox():
             image_pred = image_pred[conf_mask]  # 留下有物体的anchor
             class_conf = class_conf[conf_mask]
             class_pred = class_pred[conf_mask]
-            # print("image_pred ", image_pred.shape)  image_pred  torch.Size([118, 85])
-            # print("class_conf ", class_conf.shape)  # class_conf  torch.Size([118, 1])
-            # print("class_pred ", class_pred.shape)  # class_pred  torch.Size([118, 1])
-            if not image_pred.size(0):  # 没有检测到合格的先验框就重新检测
+            # print("image_pred ", image_pred.shape)  image_pred  torch.Size([118, 85]) 先验框
+            # print("class_conf ", class_conf.shape)  # class_conf  torch.Size([118, 1]) 分值
+            # print("class_pred ", class_pred.shape)  # class_pred  torch.Size([118, 1])  分值在image_pre的下标
+            if not image_pred.size(0):  # 没有检测到合格的先验框就重新检测, size不为0，即有符合的先验框
                 continue
             #-------------------------------------------------------------------------#
             #   detections  [num_anchors, 7]
             #   7的内容为：x1, y1, x2, y2, obj_conf, class_conf, class_pred[0, 1, 2]多分类
             #-------------------------------------------------------------------------#
             detections = torch.cat((image_pred[:, :5], class_conf.float(), class_pred.float()), 1)
-            #                           坐标和置信度          种类置信度            种类
+            #                            坐标           种类置信度                  种类
             # print("detections ", detections.shape)  detections  torch.Size([118, 7])
             # print(detections[:, -1])  [0, 1, 2]多分类
             # print(detections[:, -1].shape)  [118]
             #------------------------------------------#
             #   获得预测结果中包含的所有种类
             #------------------------------------------#
-            unique_labels = detections[:, -1].cpu().unique()  # # 不重复取出所有的值，按升序排列
+            unique_labels = detections[:, -1].cpu().unique()  # # 不重复取出所有的值，按升序排列，就是按维排列，对应每一个类的下标
             # print("unique_labels", unique_labels)  unique_labels tensor([0., 1., 2.])
 
             if prediction.is_cuda:
                 unique_labels = unique_labels.cuda()
                 detections = detections.cuda()
 
-            for c in unique_labels:   # 去除对应的种类序号
+            for c in unique_labels:   # 一个C即为一个类，也就是对应输出张量的同一维
                 #------------------------------------------#
                 #   获得某一类得分筛选后全部的预测结果
                 #------------------------------------------#
@@ -225,24 +225,24 @@ class DecodeBox():
                 #   筛选出一定区域内，属于同一种类得分最大的框
                 #------------------------------------------#
                 keep = nms(
-                    detections_class[:, :4],
-                    detections_class[:, 4] * detections_class[:, 5],
-                    nms_thres
+                    detections_class[:, :4],  # 坐标
+                    detections_class[:, 4] * detections_class[:, 5],  # 得分
+                    nms_thres  # 阈值
                 )
-                max_detections = detections_class[keep]
+                max_detections = detections_class[keep]  # 返回的keep也是掩码
                 
                 # # 按照存在物体的置信度排序
                 # _, conf_sort_index = torch.sort(detections_class[:, 4]*detections_class[:, 5], descending=True)
-                # detections_class = detections_class[conf_sort_index]
+                # detections_class = detections_class[conf_sort_index]按照得分值高低排序
                 # # 进行非极大抑制
                 # max_detections = []
                 # while detections_class.size(0):
                 #     # 取出这一类置信度最高的，一步一步往下判断，判断重合程度是否大于nms_thres，如果是则去除掉
                 #     max_detections.append(detections_class[0].unsqueeze(0))
-                #     if len(detections_class) == 1:
+                #     if len(detections_class) == 1:  只有一个就不用比较了
                 #         break
                 #     ious = bbox_iou(max_detections[-1], detections_class[1:])
-                #     detections_class = detections_class[1:][ious < nms_thres]   # 小于阈值留下
+                #     detections_class = detections_class[1:][ious < nms_thres]   # 小于交叉阈值的留下，可能不止一个同类物体
                 # # 堆叠
                 # max_detections = torch.cat(max_detections).data
                 
@@ -251,7 +251,7 @@ class DecodeBox():
             
             if output[i] is not None:
                 output[i]           = output[i].cpu().numpy()
-                # 左上角加上宽高的一般就是中心点，右下角减去左下角就是宽高
+                # 左上角加上右下角除于2就是中心点，右下角减去左下角就是宽高
                 box_xy, box_wh      = (output[i][:, 0:2] + output[i][:, 2:4])/2, output[i][:, 2:4] - output[i][:, 0:2]
                 output[i][:, :4]    = self.yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image)
         return output

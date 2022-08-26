@@ -294,11 +294,11 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
     if not os.path.exists(TEMP_FILES_PATH):
         os.makedirs(TEMP_FILES_PATH)
     # 在文件结束时直接删除
-    if os.path.exists(RESULTS_FILES_PATH):
+    if os.path.exists(RESULTS_FILES_PATH):  # 发现RESULTS_FILES_PATH目录下有文件直接删除
         shutil.rmtree(RESULTS_FILES_PATH)
     else:
         os.makedirs(RESULTS_FILES_PATH)
-    if draw_plot:
+    if draw_plot:  # true
         try:
             matplotlib.use('TkAgg')
         except:
@@ -336,7 +336,7 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
                 else:
                     class_name, left, top, right, bottom = line.split()
             except:
-                if "difficult" in line:
+                if "difficult" in line:             # 异常解决
                     line_split  = line.split()
                     _difficult  = line_split[-1]
                     bottom      = line_split[-2]
@@ -378,13 +378,13 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
                     already_seen_classes.append(class_name)
 
         with open(TEMP_FILES_PATH + "/" + file_id + "_ground_truth.json", 'w') as outfile:
-            json.dump(bounding_boxes, outfile)
+            json.dump(bounding_boxes, outfile)  # outfile在TEMP_FILES_PATH文件夹下建文件
 
     gt_classes  = list(gt_counter_per_class.keys())
-    gt_classes  = sorted(gt_classes)
+    gt_classes  = sorted(gt_classes)  # 根据键来升序排序
     n_classes   = len(gt_classes)
 
-    dr_files_list = glob.glob(DR_PATH + '/*.txt')
+    dr_files_list = glob.glob(DR_PATH + '/*.txt')  # 取出预测所有的txt文件sort排序
     dr_files_list.sort()
     for class_index, class_name in enumerate(gt_classes):
         bounding_boxes = []
@@ -416,7 +416,7 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
                     bbox = left + " " + top + " " + right + " " +bottom
                     bounding_boxes.append({"confidence":confidence, "file_id":file_id, "bbox":bbox})
 
-        bounding_boxes.sort(key=lambda x:float(x['confidence']), reverse=True)
+        bounding_boxes.sort(key=lambda x:float(x['confidence']), reverse=True)  # 按得分排序，倒序
         with open(TEMP_FILES_PATH + "/" + class_name + "_dr.json", 'w') as outfile:
             json.dump(bounding_boxes, outfile)
 
@@ -476,10 +476,10 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
                         bi      = [max(bb[0],bbgt[0]), max(bb[1],bbgt[1]), min(bb[2],bbgt[2]), min(bb[3],bbgt[3])]
                         iw      = bi[2] - bi[0] + 1
                         ih      = bi[3] - bi[1] + 1
-                        if iw > 0 and ih > 0:
+                        if iw > 0 and ih > 0:  # groundtruth面积 + 预测面积 -交叉部分 = ua
                             ua = (bb[2] - bb[0] + 1) * (bb[3] - bb[1] + 1) + (bbgt[2] - bbgt[0]
                                             + 1) * (bbgt[3] - bbgt[1] + 1) - iw * ih
-                            ov = iw * ih / ua
+                            ov = iw * ih / ua  # ciou
                             if ov > ovmax:
                                 ovmax = ov
                                 gt_match = obj
@@ -597,8 +597,8 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
                 Recall_text     = "0.00%" + " = " + class_name + " Recall " 
                 Precision_text  = "0.00%" + " = " + class_name + " Precision " 
 
-            rounded_prec    = [ '%.2f' % elem for elem in prec ]
-            rounded_rec     = [ '%.2f' % elem for elem in rec ]
+            rounded_prec    = [ '%.2f' % elem for elem in prec ]  # 某一类所有的精确度
+            rounded_rec     = [ '%.2f' % elem for elem in rec ]   # 某一类的所有的召回率
             results_file.write(text + "\n Precision: " + str(rounded_prec) + "\n Recall :" + str(rounded_rec) + "\n\n")
             
             if len(prec)>0:

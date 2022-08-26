@@ -9,14 +9,350 @@ from torch.nn import functional as F
 import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
+from utils.activations import FReLU, Hardswish
+from torchsummary import summary
+import glob
+# from __future__ import absolute_import
+
+from torchvision.transforms import *
+
+from PIL import Image
+import random
+import math
 import numpy as np
+import torch
+
+
+class Cutout(object):
+    """Randomly mask out one or more patches from an image.
+    Args:
+        n_holes (int): Number of patches to cut out of each image.
+        length (int): The length (in pixels) of each square patch.
+    """
+
+    def __init__(self, n_holes, length, fill_value):
+        self.n_holes = n_holes
+        self.length = length
+        self.fill_value = fill_value
+
+    def __call__(self, img):
+        """
+        Args:
+            img (Tensor): Tensor image of size (C, H, W).
+        Returns:
+            Tensor: Image with n_holes of dimension length x length cut out of it.
+        """
+        h = img.size(1)
+        w = img.size(2)
+
+        mask = np.ones((h, w), np.float32)
+
+        for n in range(self.n_holes):
+            y = np.random.randint(h)
+            x = np.random.randint(w)
+
+            y1 = np.clip(y - self.length // 2, 0, h)
+            y2 = np.clip(y + self.length // 2, 0, h)
+            x1 = np.clip(x - self.length // 2, 0, w)
+            x2 = np.clip(x + self.length // 2, 0, w)
+
+            mask[y1: y2, x1: x2] = self.fill_value
+
+
+        mask = torch.from_numpy(mask)
+        mask = mask.expand_as(img)
+        img = img * mask
+
+        return img
+
+
+if __name__ == "__main__":
+    # # 2、Cutout
+    img = cv2.imread("img/1_2.jpg")
+    print(img.shape)
+    save_path = "1_21.jpg"
+    transform = Compose([
+        transforms.ToTensor(),
+        Cutout(n_holes=30, length=10, fill_value=0.)  # length 控制擦除范围，fill_value控制用什么值进行擦除
+    ])
+    # transform暂且把他看作一个已经实例化的函数，将多步骤给合在一起的函数
+    img2 = transform(img=img)
+    print(img2.shape)
+    img2 = img2.numpy().transpose([1, 2, 0])
+    print(img2.shape)
+    cv2.imwrite(save_path, img2)
+    cv2.imshow("test", img2)
+    cv2.waitKey(0)
 
 
 
+# model = RandomErasing()
+#
+# if __name__ == "__main__":
+#     file = 'img/1_2.jpg'
+#     save_path = "1_21.jpg"
+#
+#     img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+#     img = model(img)
+#     cv2.imwrite(save_path, img)
+#     cv2.imshow("image", img)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
+
+'''
+class RandomErasing(object):
+    
+    Class that performs Random Erasing in Random Erasing Data Augmentation by Zhong et al.
+    -------------------------------------------------------------------------------------
+    probability: The probability that the operation will be performed.
+    sl: min erasing area
+    sh: max erasing area
+    r1: min aspect ratio
+    mean: erasing value
+    -------------------------------------------------------------------------------------
+    
+
+    def __init__(self, probability=0.5, sl=0.02, sh=0.4, r1=0.3, mean=[0.4914, 0.4822, 0.4465]):
+        self.probability = probability
+        self.mean = mean
+        self.sl = sl
+        self.sh = sh
+        self.r1 = r1
+
+    def __call__(self, img):
+
+        # if random.uniform(0, 1) > self.probability:
+        #     return img
+
+        for attempt in range(100):
+
+            print(img.size)
+            print(img.shape)
+            area = img[0] * img[1]
+
+            target_area = random.uniform(self.sl, self.sh) * area
+            aspect_ratio = random.uniform(self.r1, 1 / self.r1)
+
+            h = np.round(np.sqrt(target_area * aspect_ratio))
+            w = np.round(np.sqrt(target_area / aspect_ratio))
+            print(h, w)
+
+            if w < img[1] and h < img[0]:
+                x1 = random.randint(0, img[0] - h)
+                y1 = random.randint(0, img[1] - w)
+                if img.size()[2] == 3:
+                    img[3, x1:x1 + h, y1:y1 + w] = self.mean[3]
+                    img[0, x1:x1 + h, y1:y1 + w] = self.mean[0]
+                    img[1, x1:x1 + h, y1:y1 + w] = self.mean[1]
+                else:
+                    img[3, x1:x1 + h, y1:y1 + w] = self.mean[3]
+                return img
+
+        return img
+'''
+
+
+'''
+打开某目录下 所有的某文件
+ground_truth_files_list = glob.glob("D:\shuqikaohe\yolov5-pytorch-main" + '/*.txt')  # 获取该文件夹下的.txt file
+
+for txt_file in ground_truth_files_list:
+    file_id = txt_file.split(".txt", 1)[0]
+    file = os.path.normpath(file_id)
+    file_id = os.path.basename(os.path.normpath(file_id))
+    print(file)
+    print(file_id)
+
+'''
+
+
+'''
+VOC格式数据集的访问
+
+import xml.etree.ElementTree as ET
+
+with open('sample.xml', 'r') as f:
+    tree = ET.parse(f)
+
+root = tree.getroot()
+print(root)
+
+root
+# <Element 'annotation' at 0x107577a98>
+
+list(root)
+# <Element 'folder' at 0x107577908>
+# <Element 'filename' at 0x107577ef8>
+# <Element 'size' at 0x107577868>
+# <Element 'segmented' at 0x107577d18>
+# <Element 'object' at 0x1075777c8>
+# <Element 'object' at 0x1075775e8>
+# <Element 'object' at 0x10741dcc8>
+
+size = root.find('size')  # 获取子元素
+print(size)
+w = int(size.find('width').text)  # 读取值
+print(w)
+h = int(size.find('height').text)
+print(h)
+
+for obj in root.iter('object'):  # 多个元素
+    difficult = obj.find('difficult').text
+    cls = obj.find('name').text
+    print(obj)
+    print(difficult)
+    print(cls)
+
+'''
+
+'''
+file = 'img/1_2.jpg'
+save_path = "1_21.jpg"
+
+img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+sigma = 0
+kernel_size = (5, 5)
+img = cv2.GaussianBlur(img, kernel_size, sigma)
+cv2.imwrite(save_path, img)
+
+print("The picture is currently being processed")
+'''
+
+'''
+// 掩码的操作
+
+arr1 = torch.randn(10, 15)
+arr2 = torch.randn(2, 3, 4)
+
+a, b =torch.max(arr1[:, 5:15], 1, keepdim=True)
+print(arr1[:, 5:15])
+print(a)
+print(b)
+print(arr1[:, 4])
+print(a[:, 0])
+print(arr1[:, 4]*a[:, 0])
+mask = (arr1[:, 4]*a[:, 0]>=0.5).squeeze()
+print(mask)
+
+arr1_m = arr1[mask]
+a_m = a[mask]
+b_m = b[mask]
+print(arr1_m)
+print(a_m)
+print(b_m)
+
+'''
+
+
+'''//  深度可分离卷积的添加
+
+# 自定义自动padding模块
+def autopad(k, p=None):
+    if p is None:
+        p = k // 2 if isinstance(k, int) else [x // 2 for x in k]
+        # auto-pad #如果k是整数，p为k与2整除后向下取整；如果k是列表等，p对应的是列表中每个元素整除2。
+    return p
+
+
+
+class Conv(nn.Module):
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):
+        super(Conv, self).__init__()
+        self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)  # p 通过 autopad函数 自适应，保持shape对应
+        self.bn = nn.BatchNorm2d(c2, eps=0.001, momentum=0.03)
+        # self.act    = SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())  # 加入非线性因素
+        self.act = FReLU(c2) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # self.act    = Hardswish() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        # 加入非线性因素  frelu目前除了召回率其他都比baseline好的模型
+
+    def forward(self, x):
+        return self.act(self.bn(self.conv(x)))  # 完整的经过一层卷积操作 即，conv + bn + act
+
+class depth_conv(nn.Module):
+    def __init__(self, ch_in, ch_out,k=1, s=1, p=None, act=True):
+        super(depth_conv, self).__init__()
+        self.depth_conv = nn.Conv2d(ch_in, ch_in, k, s, autopad(k, p), groups=ch_in, bias=False)
+        self.point_conv = nn.Conv2d(ch_in, ch_out, kernel_size=1)
+        self.act = FReLU(ch_out) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+
+    def forward(self, x):
+        x = self.depth_conv(x)
+        x = self.point_conv(x)
+        x = self.act(x)
+        return x
+
+
+
+
+class mymodel(nn.Module):
+    def __init__(self, base_channels):
+        super().__init__()
+        self.Dark = depth_conv(base_channels, base_channels * 2, 3, 2)
+
+    def forward(self, x):
+        x = self.Dark(x)
+
+        return x
+
+
+device = torch.device("cuda")
+model = mymodel(4).to(device)
+print(model)
+summary(model, (4, 20, 20))  # 模型总结函数会自己打印
+
+a = torch.randn(2, 4, 20, 20).to(device)
+
+if __name__ == "__main__":
+    b = model(a)
+    print("---"*30)
+    print(a.shape)
+    print(b.shape)
+
+'''
+'''
+
+class depth_conv(nn.Module):
+    def __init__(self, ch_in, ch_out):
+        super(depth_conv, self).__init__()
+        self.depth_conv = nn.Conv2d(ch_in, ch_in, kernel_size=3, padding=1, groups=ch_in)
+        self.point_conv = nn.Conv2d(ch_in, ch_out, kernel_size=1)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = self.depth_conv(x)
+        x = self.point_conv(x)
+        x = self.relu(x)
+        return x
+
+class mymodel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv2 = depth_conv(4, 4)
+
+    def forward(self, x):
+        x = self.conv2(x)
+
+        return x
+
+
+device = torch.device("cuda")  # 设置机器
+model = mymodel().to(device)  # 将模型搬到GPU上，返回GPU上的模型
+# summary(model, (4, 3, 3))  # 模型总结函数会自己打印
+
+a = torch.randn(2, 4, 20, 20).to(device)  # 转化为cuda的数据类型
+
+if __name__ == "__main__":
+    b = model(a)
+    print("---"*30)
+    print(a.shape)
+    print(b.shape)
+'''
 
 
 # content = torch.load('weights/best_epoch_weights.pth')
 # print(content.keys())
+
+'''
 
 
 class Hardswish(nn.Module):
@@ -43,73 +379,73 @@ ax.spines['top'].set_color('none') # 去除上边界线
 ax.spines['bottom'].set_position(('data',0))
 ax.spines['left'].set_position(('data',0))
 #
-# ##### 绘制Tanh图像
-# ax = fig.add_subplot(322)
-# y_tanh = (np.exp(x)-np.exp(-x))/(np.exp(x)+np.exp(-x))
-# ax.plot(x,y_tanh,color='blue')
-# ax.grid()
-# ax.set_title('(b) Tanh')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
+##### 绘制Tanh图像
+ax = fig.add_subplot(322)
+y_tanh = (np.exp(x)-np.exp(-x))/(np.exp(x)+np.exp(-x))
+ax.plot(x,y_tanh,color='blue')
+ax.grid()
+ax.set_title('(b) Tanh')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
 
-# ##### 绘制Relu图像
-# ax = fig.add_subplot(323)
-# y_relu = np.array([0*item  if item<0 else item for item in x ])
-# ax.plot(x,y_relu,color='darkviolet')
-# ax.grid()
-# ax.set_title('(c) ReLu')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
-#
-# ##### 绘制Leaky Relu图像
-# ax = fig.add_subplot(324)
-# y_relu = np.array([0.2*item  if item<0 else item for item in x ])
-# ax.plot(x,y_relu,color='darkviolet')
-# ax.grid()
-# ax.set_title('(d) Leaky Relu')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
-#
-# ##### 绘制ELU图像
-# ax = fig.add_subplot(325)
-# y_elu = np.array([2.0*(np.exp(item)-1)  if item<0 else item for item in x ])
-# ax.plot(x,y_elu,color='darkviolet')
-# ax.grid()
-# ax.set_title('(d) ELU alpha=2.0')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
-#
-#
-# class SiLU(nn.Module):
-#     @staticmethod
-#     def forward(x):
-#         return x * torch.sigmoid(x)
+##### 绘制Relu图像
+ax = fig.add_subplot(323)
+y_relu = np.array([0*item  if item<0 else item for item in x ])
+ax.plot(x,y_relu,color='darkviolet')
+ax.grid()
+ax.set_title('(c) ReLu')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
+
+##### 绘制Leaky Relu图像
+ax = fig.add_subplot(324)
+y_relu = np.array([0.2*item  if item<0 else item for item in x ])
+ax.plot(x,y_relu,color='darkviolet')
+ax.grid()
+ax.set_title('(d) Leaky Relu')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
+
+##### 绘制ELU图像
+ax = fig.add_subplot(325)
+y_elu = np.array([2.0*(np.exp(item)-1)  if item<0 else item for item in x ])
+ax.plot(x,y_elu,color='darkviolet')
+ax.grid()
+ax.set_title('(d) ELU alpha=2.0')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
 
 
-# ax = fig.add_subplot(326)
-# y_sigmoid_dev = x * sigmoid(x)
-# ax.plot(x,y_sigmoid_dev,color='green')
-# ax.grid()
-# ax.set_title('(e) SiLU')
-# ax.spines['right'].set_color('none') # 去除右边界线
-# ax.spines['top'].set_color('none') # 去除上边界线
-# ax.spines['bottom'].set_position(('data',0))
-# ax.spines['left'].set_position(('data',0))
+class SiLU(nn.Module):
+    @staticmethod
+    def forward(x):
+        return x * torch.sigmoid(x)
+
+
+ax = fig.add_subplot(326)
+y_sigmoid_dev = x * sigmoid(x)
+ax.plot(x,y_sigmoid_dev,color='green')
+ax.grid()
+ax.set_title('(e) SiLU')
+ax.spines['right'].set_color('none') # 去除右边界线
+ax.spines['top'].set_color('none') # 去除上边界线
+ax.spines['bottom'].set_position(('data',0))
+ax.spines['left'].set_position(('data',0))
 
 plt.tight_layout()
 plt.savefig('Activation.png')
 plt.show()
 
 
-
+'''
 
 
 

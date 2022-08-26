@@ -5,7 +5,7 @@ import torch
 from thop import clever_format, profile
 from torchsummary import summary
 
-from nets.yolo import YoloBody
+from nets.yolo1 import YoloBody
 
 if __name__ == "__main__":
     input_shape     = [640, 640]
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     phi             = 's'     # ‘l’和's'得通道数不同
     
     device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    m       = YoloBody(anchors_mask, num_classes, phi, pad=1, backbone=backbone).to(device)  # pad 为注意力集中机制的调用参数
+    m       = YoloBody(anchors_mask, num_classes, phi, pad=2, backbone=backbone).to(device)  # pad 为注意力集中机制的调用参数
     summary(m, (3, input_shape[0], input_shape[1]))
     
     dummy_input     = torch.randn(1, 3, input_shape[0], input_shape[1]).to(device)

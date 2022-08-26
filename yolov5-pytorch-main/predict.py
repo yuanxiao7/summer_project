@@ -21,7 +21,7 @@ if __name__ == "__main__":
     #   'heatmap'           表示进行预测结果的热力图可视化，详情查看下方注释。
     #   'export_onnx'       表示将模型导出为onnx，需要pytorch1.7.1以上。
     #----------------------------------------------------------------------------------------------------------#
-    mode = "fps"
+    mode = "predict"
     #-------------------------------------------------------------------------#
     #   crop                指定了是否在单张图片预测后对目标进行截取
     #   count               指定了是否进行目标的计数
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     elif mode == "fps":
         img = Image.open(fps_image_path)
         tact_time = yolo.get_FPS(img, test_interval)
-        print(str(tact_time) + ' seconds, ' + str(1/tact_time) + 'FPS, @batch_size 1')
+        print(str(tact_time) + ' seconds, ' + str(1/tact_time) + ' FPS, @batch_size 1')
 
     elif mode == "dir_predict":
         import os

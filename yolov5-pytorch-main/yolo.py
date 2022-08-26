@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 from PIL import ImageDraw, ImageFont
 
-from nets.yolo import YoloBody
+from nets.yolo1 import YoloBody
 from utils.utils import (cvtColor, get_anchors, get_classes, preprocess_input,
                          resize_image, show_config)
 from utils.utils_bbox import DecodeBox
@@ -32,14 +32,13 @@ class YOLO(object):
         # "model_path"        : 'saved_model/map_out_baseline_silu/baseline/best_epoch_weights.pth',  # baseline
         # "model_path"        : 'saved_model\map_out_server_Hsilu\hsilu/best_epoch_weights.pth',  # x * Fsigmoid
         # "model_path"        : r'weights\ep030-loss0.116-val_loss0.071.pth',  # baseline 的第30个epoch获得比较好的权重
-        # "model_path"        : 'saved_model\map_out_server2frelu/frelu/best_epoch_weights.pth',   #frelu
-        # "model_path"        : 'saved_model\map_out_frelu_EAC\ECA/best_epoch_weights.pth',
-        "model_path"        : 'server_weights/last_epoch_weights.pth',
+        # "model_path"        : 'saved_model\map_out_focus_loss/focus_loss/last_epoch_weights.pth',
+        "model_path"          : 'server_weights\cutout/best_epoch_weights.pth',
 
         # FReLU
         # "model_path"        : r'saved_model\map_out_server2frelu\frelu\best_epoch_weights.pth',  # frelu
 
-        "classes_path"      : 'model_data/voc_classes.txt',
+        "classes_path"        : 'model_data/voc_classes.txt',
         # "classes_path"      : 'model_data/coco_classes.txt',
         # ---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
@@ -67,7 +66,7 @@ class YOLO(object):
         # ---------------------------------------------------------------------#
         #   只有得分大于置信度的预测框会被保留下来   # 调整得分，可以提高召回率
         # ---------------------------------------------------------------------#
-        "confidence": 0.3,
+        "confidence": 0.2,
         # ---------------------------------------------------------------------#
         #   非极大抑制所用到的nms_iou大小  预测最好得、分最高的框对相近框的容忍程度
         #   调正的恰当也可以提高召回率，但不明显 但是重复检验的框变多
@@ -188,8 +187,8 @@ class YOLO(object):
             if results[0] is None:
                 return image
 
-            top_label = np.array(results[0][:, 6], dtype='int32')  # 种类
-            top_conf = results[0][:, 4] * results[0][:, 5]  # 之信服
+            top_label = np.array(results[0][:, 6], dtype='int32')  # 种类，对应为向量维度
+            top_conf = results[0][:, 4] * results[0][:, 5]  # 得分
             top_boxes = results[0][:, :4]
         # ---------------------------------------------------------#
         #   设置字体与边框厚度

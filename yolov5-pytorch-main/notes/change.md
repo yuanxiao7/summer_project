@@ -2,9 +2,13 @@
 
 # 模型改动
 
+---
+
 ### 注意
 
 - **注意参数之间的对应关系，以及特征图的shape匹配问题**
+
+---
 
 ### 改动思路：
 
@@ -37,7 +41,7 @@
 
    有余力加上deep sort
 
-
+---
 
 ### 相关概念
 
@@ -52,6 +56,8 @@
 #### 梯度爆炸
 
 - 由于导数的链式法则，连续多层大于1的梯度相乘会使梯度越来越大，最终导致梯度太大的问题
+
+---
 
 
 
@@ -156,24 +162,201 @@ torch
 - softsign 函数
 - 高斯误差线性单元 GELUs
 
+---
+
 
 
 ## 注意力集中机制
 
 注意力集中机制已经写到attention_block.md文件里了。学会了4个比较简单的，也看了多头注意力集中机制，还有一些 transformer 的讲解，但因为对transformer理解不深，且transformer参数大，目前把学会的attention添加到网络里进行测试，简单做了个消融实验。
 
+---
+
 
 
 ## 损失函数
 
+### focus loss
 
+- **改动：**将原来的交叉熵损失函数改为交叉熵损失函数的基础上的focus loss
+- **理由：**再网上看到对于focus loss的评论不一，又说他可以较好的区别正负样本，可以长点，但也有的说没什么用。在yolov3的论文里，作者也常讲过，他试过了多次实验，并没有发现focus对yolo有很好的影响。别人说的再多还不如自己实验一遍，不就知道了，于是我就去找了相关视频博客等了解并修改。
+- **结果：**跑完训练后，并没有得到好效果，掉点了，确实，在我这个yolo模型中并没有好的影响。
 
-
+---
 
 
 
 ## 网络修改
 
-1. 增加网络的深度，但又要保持网络不过于复杂，保持网络轻量化，drop机制，为了尽量使广度的减少量更小，用1*1的filter
+1. 将focus改成两个标准卷积bn激活函数和一个深度可分离卷积构成的组件
+2. 把中间及循环部分的卷积改为深度可分离卷积
+3. 残差融合部分cat改为add
+4. 并且稍稍减少了循环的次数
 
-   
+---
+
+
+
+## 数据增强
+
+
+
+### baseline已有
+
+- **色域，缩放，水平变换，马赛克，Mixup**
+
+
+
+### 可添加
+
+#### 高斯模糊
+
+- 高斯滤波将图像频域处理和时域处理相联系，作为低通滤波器使用，可以将低频能量（如噪声）滤去，起到图像平滑作用。
+
+- 图像的高斯模糊过程就是图像与正态分布做卷积。
+
+  
+
+- 高斯模糊是一种图像模糊[滤波器](https://baike.baidu.com/item/滤波器)，它用[正态分布](https://baike.baidu.com/item/正态分布)计算图像中每个像素的[变换](https://baike.baidu.com/item/变换)。N维空间正态分布方程为
+
+  ![img](https://bkimg.cdn.bcebos.com/formula/4227ca574304a3b92a08fd1bc10c6d10.svg)
+
+  在二维空间定义为
+
+  ![img](https://bkimg.cdn.bcebos.com/formula/af01dd8f4e5f1181a9c8f8570ff0bcf6.svg)
+
+  
+
+- 其中*r*是模糊半径，σ是正态分布的[标准偏差](https://baike.baidu.com/item/标准偏差)。在二维空间中，这个公式生成的曲面的[等高线](https://baike.baidu.com/item/等高线)是从中心开始呈正态分布的[同心圆](https://baike.baidu.com/item/同心圆)。分布不为零的像素组成的[卷积](https://baike.baidu.com/item/卷积)矩阵与原始图像做变换。每个像素的值都是周围相邻像素值的[加权平均](https://baike.baidu.com/item/加权平均)。原始像素的值有最大的高斯分布值，所以有最大的权重，相邻像素随着距离原始像素越来越远，其权重也越来越小。这样进行模糊处理比其它的均衡模糊滤波器更高地保留了边缘效果，如尺度空间实现。
+
+- 模糊半径r越大，范围越大，图片越模糊。
+
+
+
+代码实现如下，根目录为yolov5-pytorch-main
+
+```python
+
+file = 'img/1_2.jpg'
+save_path = "1_21.jpg"
+
+img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+sigma = 0
+kernel_size = (5, 5)
+img = cv2.GaussianBlur(img, kernel_size, sigma)
+cv2.imwrite(save_path, img)
+
+print("The picture is currently being processed")
+
+
+
+```
+
+
+
+#### 添加云雾
+
+给图片添加云雾，类似于模拟现实多雾或阴雨蒙蒙的状态。
+
+
+
+```python
+import cv2, math
+import numpy as np
+ 
+def demo():
+    img_path = 'test.png'
+ 
+    img = cv2.imread(img_path)
+    img_f = img / 255.0
+    (row, col, chs) = img.shape
+ 
+    A = 0.5                               # 亮度
+    beta = 0.08                           # 雾的浓度
+    size = math.sqrt(max(row, col))      # 雾化尺寸
+    center = (row // 2, col // 2)        # 雾化中心
+    for j in range(row):
+        for l in range(col):
+            d = -0.04 * math.sqrt((j-center[0])**2 + (l-center[1])**2) + size
+            td = math.exp(-beta * d)
+            img_f[j][l][:] = img_f[j][l][:] * td + A * (1 - td)
+ 
+    cv2.imshow("src", img)
+    cv2.imshow("dst", img_f)
+    cv2.waitKey()
+ 
+ 
+if __name__ == '__main__':
+    demo()
+```
+
+
+
+
+
+#### **cutout随机擦除**
+
+- 随机给图像添加一些小块遮挡，模拟现实遮挡场景，遮挡的形状不影响，
+
+```python
+class Cutout(object):
+    """Randomly mask out one or more patches from an image.
+    Args:
+        n_holes (int): Number of patches to cut out of each image.
+        length (int): The length (in pixels) of each square patch.
+    """
+    def __init__(self, n_holes, length, fill_value):
+        self.n_holes = n_holes
+        self.length = length
+        self.fill_value= fill_value
+
+    def __call__(self, img):
+        """
+        Args:
+            img (Tensor): Tensor image of size (C, H, W).
+        Returns:
+            Tensor: Image with n_holes of dimension length x length cut out of it.
+        """
+        h = img.size(1)
+        w = img.size(2)
+
+        mask = np.ones((h, w), np.float32)
+
+        for n in range(self.n_holes):
+            y = np.random.randint(h)
+            x = np.random.randint(w)
+
+            y1 = np.clip(y - self.length // 2, 0, h)
+            y2 = np.clip(y + self.length // 2, 0, h)
+            x1 = np.clip(x - self.length // 2, 0, w)
+            x2 = np.clip(x + self.length // 2, 0, w)
+
+            mask[y1: y2, x1: x2] = self.fill_value
+
+        mask = torch.from_numpy(mask)
+        mask = mask.expand_as(img)
+        img = img * mask
+
+        return img
+        
+if __name__ == "__main__":
+    # # 2、Cutout
+    img = cv2.imread("test.jpeg")
+    transform = Compose([
+        transforms.ToTensor(),
+        Cutout(n_holes=30, length=10, fill_value=0.)
+    ])
+    img2 = transform(img=img)
+    img2 = img2.numpy().transpose([1, 2, 0])
+    cv2.imshow("test", img2)
+    cv2.waitKey(0)
+
+```
+
+
+
+
+
+救命呀，茶轴好吵！比我box白还要吵！！
+
+麻了

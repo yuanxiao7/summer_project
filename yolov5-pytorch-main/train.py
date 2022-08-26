@@ -12,11 +12,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from nets.yolo import YoloBody
+from nets.yolo1 import YoloBody
 from nets.yolo_training import (ModelEMA, YOLOLoss, get_lr_scheduler,
                                 set_optimizer_lr, weights_init)
 from utils.callbacks import LossHistory, EvalCallback
-from utils.dataloader import YoloDataset, yolo_dataset_collate
+from utils.dataloader1 import YoloDataset, yolo_dataset_collate
 from utils.utils import download_weights, get_anchors, get_classes, show_config
 from utils.utils_fit import fit_one_epoch
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = r'weights\ep030-loss0.116-val_loss0.071.pth'  # 30 epoch  silu
+    model_path      = ''  # 30 epoch  silu
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -137,6 +137,10 @@ if __name__ == "__main__":
     mixup               = True
     mixup_prob          = 0.5
     special_aug_ratio   = 0.7
+    #------------------------------------------------------------------#
+    #   随机擦除
+    #------------------------------------------------------------------#
+    cutout              = True
     #------------------------------------------------------------------#
     #   label_smoothing     标签平滑。一般0.01以下。如0.01、0.005。  当其为0时，表示没有使用标签平滑操作
     #   主要是防止过拟合
@@ -191,7 +195,7 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 100
-    Unfreeze_batch_size = 12
+    Unfreeze_batch_size = 8
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练， False的话直接训练，解冻训练参数无效
     #                   默认先冻结主干训练后解冻训练。
@@ -294,7 +298,6 @@ if __name__ == "__main__":
     #   创建yolo模型
     #------------------------------------------------------#
     model = YoloBody(anchors_mask, num_classes, phi, pad, backbone, pretrained=pretrained, input_shape=input_shape)  # pad ！！！
-    print(model)
     if not pretrained:
         weights_init(model)  # 初始化模型
     if model_path != '':
@@ -480,9 +483,9 @@ if __name__ == "__main__":
         #   构建数据集加载器 dataset打包数据
         #---------------------------------------#
         train_dataset   = YoloDataset(train_lines, input_shape, num_classes, anchors, anchors_mask, epoch_length=UnFreeze_Epoch, \
-                                        mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=True, special_aug_ratio=special_aug_ratio)
+                                        mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, cutout=cutout, train=True, special_aug_ratio=special_aug_ratio)
         val_dataset     = YoloDataset(val_lines, input_shape, num_classes, anchors, anchors_mask, epoch_length=UnFreeze_Epoch, \
-                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
+                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, cutout=False, train=False, special_aug_ratio=0)
         
         if distributed:
             train_sampler   = torch.utils.data.distributed.DistributedSampler(train_dataset, shuffle=True,)

@@ -75,7 +75,7 @@ if __name__ == "__main__":
     #-------------------------------------------------------#
     map_out_path    = 'map_out'
 
-    image_ids = open(os.path.join(VOCdevkit_path, "VOC2007/ImageSets/Main/test.txt")).read().strip().split()  # 获取测试图片
+    image_ids = open(os.path.join(VOCdevkit_path, "VOC2007/ImageSets/Main/test.txt")).read().strip().split()  # 获取测试图片ID
 
     if not os.path.exists(map_out_path):
         os.makedirs(map_out_path)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     class_names, _ = get_classes(classes_path)
 
-    if map_mode == 0 or map_mode == 1:
+    if map_mode == 0 or map_mode == 1:   # 获取预测结果
         print("Load model.")
         yolo = YOLO(confidence = confidence, nms_iou = nms_iou)
         print("Load model done.")
@@ -102,21 +102,21 @@ if __name__ == "__main__":
             yolo.get_map_txt(image_id, image, class_names, map_out_path)
         print("Get predict result done.")
         
-    if map_mode == 0 or map_mode == 2:
+    if map_mode == 0 or map_mode == 2:   # 在annotations中获取预测结果对应的ground truth
         print("Get ground truth result.")
         for image_id in tqdm(image_ids):
             with open(os.path.join(map_out_path, "ground-truth/"+image_id+".txt"), "w") as new_f:
-                root = ET.parse(os.path.join(VOCdevkit_path, "VOC2007/Annotations/"+image_id+".xml")).getroot()
-                for obj in root.findall('object'):
+                root = ET.parse(os.path.join(VOCdevkit_path, "VOC2007/Annotations/"+image_id+".xml")).getroot()  # 获取路径
+                for obj in root.findall('object'):  # 获取类
                     difficult_flag = False
                     if obj.find('difficult')!=None:
                         difficult = obj.find('difficult').text
-                        if int(difficult)==1:
+                        if int(difficult)==1:  # 判断是不是难以识别
                             difficult_flag = True
                     obj_name = obj.find('name').text
-                    if obj_name not in class_names:
+                    if obj_name not in class_names:  # 判断获取的类在不在数据集的类里面
                         continue
-                    bndbox  = obj.find('bndbox')
+                    bndbox  = obj.find('bndbox')  # 取出坐标
                     left    = bndbox.find('xmin').text
                     top     = bndbox.find('ymin').text
                     right   = bndbox.find('xmax').text
