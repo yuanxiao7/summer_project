@@ -1,6 +1,4 @@
-# 注意应力集中机制
-
-
+# 注意力集中机制
 
 ### 笔记出处   
 
@@ -12,7 +10,7 @@
 
 对于注意力集中机制的理论理解，建议去听B站范仁义的讲解，然后再来听B导讲课 (* ^_^ *)
 
-
+---
 
 
 
@@ -25,6 +23,8 @@
 ## 通道注意力集中机制
 
 高维高语义特征，可能特征层的一些明暗信息、色域信息的特征对检测不是很重要，然后自适应通道注意力集中机制就会自适应的决定那一部分的特征是重要的，那一部分是不重要的，然后再去关注重要的特征的高语义特征。
+
+---
 
 
 
@@ -148,6 +148,8 @@ class cbam_block(nn.Module):
 
 
 
+
+
 ### ECA
 
 ECANet可以看作SENet的改进版，ECANet的作者认为SENet对通道注意力机制的预测带来了副作用，捕获所有通道的依赖关系是低效且不必要的。在ECANet的论文中，作者认为卷积具有良好的跨通道信息获取能力（避免降维对于学习通道注意力非常重要，适当的跨信道交互可以在显著降低模型复杂度的同时保持性能）。**针对深度CNN的高效通道注意(ECA)模块，该模块避免了降维，有效捕获了跨通道交互的信息。**
@@ -183,5 +185,65 @@ class eca_block(nn.Module):
 
 
 
+### CAnet
 
+CA原理是将输入的特征图分为宽度和高度两个 方向分别进行平均池化，分别获得在宽高和高度两个方向的特征图，接着将获得全局感受野的宽度和高度两个方向的特征图拼接在一起，将他们送入共享的 1 * 1 卷积核，将维度降为原来的C/r，然后经过批量归一化处理的特征图送进relu，再将特征图按原来的高度和宽度进行 1 * 1的卷分别得到与原来一样的特征图，在经过sigmoid分别得到特征图在高度和宽度上的注意力权重，最后通过矩阵乘法将两张特征图合成一张与输入一样的特征图，这样就获取到了图像高度和宽度的注意力并对精确位置信息进行编码。
+
+结构图如下
+
+![preview](https://pic4.zhimg.com/v2-5e48697e8685334a9cfe9c298b6aa6a7_r.jpg)
+
+
+
+附代码
+
+​		注：代码最后没有借助矩阵乘法。
+
+```python
+
+class CA_Block(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(CA_Block, self).__init__()
+
+        self.conv_1x1 = nn.Conv2d(in_channels=channel, out_channels=channel // reduction, kernel_size=1, stride=1,
+                                  bias=False)
+
+        self.relu = nn.ReLU()
+        self.bn = nn.BatchNorm2d(channel // reduction)
+
+        self.F_h = nn.Conv2d(in_channels=channel // reduction, out_channels=channel, kernel_size=1, stride=1,
+                             bias=False)
+        self.F_w = nn.Conv2d(in_channels=channel // reduction, out_channels=channel, kernel_size=1, stride=1,
+                             bias=False)
+
+        self.sigmoid_h = nn.Sigmoid()
+        self.sigmoid_w = nn.Sigmoid()
+
+    def forward(self, x):
+        _, _, h, w = x.size()
+
+        x_h = torch.mean(x, dim=3, keepdim=True).permute(0, 1, 3, 2)
+        x_w = torch.mean(x, dim=2, keepdim=True)
+
+        x_cat_conv_relu = self.relu(self.bn(self.conv_1x1(torch.cat((x_h, x_w), 3))))
+
+        x_cat_conv_split_h, x_cat_conv_split_w = x_cat_conv_relu.split([h, w], 3)
+
+        s_h = self.sigmoid_h(self.F_h(x_cat_conv_split_h.permute(0, 1, 3, 2)))
+        s_w = self.sigmoid_w(self.F_w(x_cat_conv_split_w))
+        a1 = s_h.expand_as(x)
+        a2 = s_w.expand_as(x)
+        out = x * s_h.expand_as(x) * s_w.expand_as(x)
+        return out
+
+
+
+# model = CA_Block(512)
+# print(model)
+# map = torch.randn(2, 512, 26, 26)
+# if __name__ == "__main__":
+#     outputs = model(map)
+#     print(outputs.shape)
+
+```
 

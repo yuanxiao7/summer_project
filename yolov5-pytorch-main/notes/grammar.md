@@ -7,6 +7,10 @@
 
 
 
+
+
+
+
 if classname.find('Conv') != -1:  **# find ()函数，实现查找classname中是否含有conv字符，没有返回-1；有返回0**.
 
  nn.init.normal_(m.weight.data, 0.0, 0.02)   #  m.weight.data 表示需要初始化的权重。

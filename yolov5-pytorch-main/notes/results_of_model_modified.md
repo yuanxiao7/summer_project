@@ -327,11 +327,19 @@ score = 0.4
 
 <img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821210940923.png" alt="image-20220821210940923" style="zoom:67%;" />
 
+### 总结
+
+也许是我对focal loss的理解不够好，没有合理的运用它，只是简单理解原理，用在网络里。
+
+
+
+### 
+
 
 
 ## 改进四、网络结构
 
-因为小伙伴们太卷了，于是我也开始更改主干网络，我把focusnet换成了两个标准卷积+bn+act和一个深度可分离组成的小组件，把中间除了特征融合出的卷积，其他都换成深度可分离卷积，因为前面用了小组件，稍稍减少了resblock，并把resblock的特征融合改成add。跑了300个epoch，测试loss在100epoch左右开始平稳，而train loss缓慢下降，模型开始收敛，最好的模型是在140个epoch左右。模型的参数量几乎减少一半，但是的到比baseline好的检测效果。
+因为小伙伴们太卷了，于是我也开始更改主干网络，我把focusnet换成了两个标准卷积+bn+act和一个深度可分离组成的小组件，把中间除了特征融合出的卷积，其他都换成深度可分离卷积，因为前面用了小组件，稍稍减少了resblock，并把resblock的特征融合改成add。跑了300个epoch，测试loss在100epoch左右开始平稳，而train loss缓慢下降，模型开始收敛，最好的模型是在140个epoch左右。模型的速度比baseline慢了10个fps，但是模型的参数量几乎减少一半，到比baseline好很多的检测效果。
 
 
 
@@ -347,3 +355,84 @@ score = 0.4
 <img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821215531935.png" alt="image-20220821215531935" style="zoom:80%;" />
 
 <img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220821215636305.png" alt="image-20220821215636305" style="zoom: 50%;" />
+
+
+
+### 中间调参实验
+
+- 这个实验可算是检验参数调整吧，我把马赛克数据增强的比例调整到0.5，并且不加注意力集中机制，并引入之前训练了60-70代的模型，在训练200次，得到的训练结果比调整降了2点几，这说明，0.7比例的马赛克数据增强在加上注意力模块对模型的检测更加有效，不过值得注意的是测试的精度效果明显好于没有调整之前的，所以说，若是有时间，调整好参数，可能会得到更好的效果。
+
+模型检测如下：
+
+| 模型 \ 指标 | map    | F1     | recall | precision |
+| ----------- | ------ | ------ | ------ | --------- |
+| baseline    | 83.10% | 79.14% | 74.47% | 84.88%    |
+| 调整        | 87.89% | 81.43% | 72.82% | 93.35%    |
+
+
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220829135931406.png" alt="image-20220829135931406" style="zoom:67%;" />
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220829140018377.png" alt="image-20220829140018377" style="zoom:50%;" />
+
+
+
+## 改进点五、随机擦除
+
+- 这是一个轻量级的数据增强，也就是不需要参数，他降低了背景对数据的贡献，可以让CNN不仅仅只是关注目标的整体，多关注目标的局部特征，提高CNNa对部分遮挡样本的鲁棒性，可以降低模型过拟合，使模型具有更好的泛化能力，可以更好模拟现实场景。我想着，提高模型识别遮挡物后的目标，这样不就更好的提高模型的召回率吗，还有就是训练时模拟遮挡，但是在测试时是没有遮挡的，这样的话，测试时有更多的数据信息形成感受野，得到的精度也会更高。于是我就把它用在网络里。
+- 得到的结果有些意外，因为他并没有提升模型的性能，各项指标都降低了，我觉得他不work的原因是，我的网络本来就是轻量级网络，训练也只是收敛，并没有出现过拟合现象，而且在我的改动之后，模型的参数量几乎减半，此时再加入随机擦除就相当于引入很大的噪声，更加不利于网络的性能提升。
+
+模型检测如下：
+
+| 模型 \ 指标 | map    | F1     | recall | precision |
+| ----------- | ------ | ------ | ------ | --------- |
+| baseline    | 83.10% | 79.14% | 74.47% | 84.88%    |
+| change_net  | 90.51% | 85.13% | 78.33% | 93.96%    |
+| 调整        | 87.89% | 81.43% | 72.82% | 93.35%    |
+| cutout      | 86.58% | 79.15% | 69.60% | 93.17%    |
+
+
+
+
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220901112921543.png" alt="image-20220901112921543" style="zoom:67%;" />
+
+
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220901113007865.png" alt="image-20220901113007865" style="zoom:50%;" />
+
+
+
+### 总结
+
+- 随机擦除更适用于网络结构复杂的模型，或者参数量较大的模型，对于相对简单的模型，引入可能会导致巨大的噪声影响，不能达到是网络性能提升的效果。
+
+
+
+
+
+## 改进点六、通道注意力
+
+- 因为之前加的注意力都是在yolo_neck后面添加的，所以这一次我在backbone里面添加，我的目的很明确，我就是想通过SE获得特征层的通道信息，让卷积提取信息是更加注重特征比较明显的区域，提取更有用的特征，更有利于感受野的形成，增强模型的泛化能力。
+
+模型指标如下：
+
+| 模型 \ 指标 | map    | F1     | recall | precision |
+| ----------- | ------ | ------ | ------ | --------- |
+| baseline    | 83.10% | 79.14% | 74.47% | 84.88%    |
+| change_net  | 90.51% | 85.13% | 78.33% | 93.96%    |
+| 调整        | 87.89% | 81.43% | 72.82% | 93.35%    |
+| cutout      | 86.58% | 79.15% | 69.60% | 93.17%    |
+| backbone    | 91.04% | 85.61% | 79.26% | 93.59%    |
+
+
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220901145010185.png" alt="image-20220901145010185" style="zoom:80%;" />
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220904134808158.png" alt="image-20220904134808158" style="zoom:67%;" />
+
+<img src="C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220904134854143.png" alt="image-20220904134854143" style="zoom:50%;" />
+
+### 总结
+
+- 合理的利用注意力模块，可以更好的提升模型的性能，添加时，注意全面考虑，知道添加的模块主要影响的区域。

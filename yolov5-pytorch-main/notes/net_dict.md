@@ -4,7 +4,9 @@
 
 ### print(YloBody)  
 
-可以在yolobody初始化以后，直接打印网络结构，一目了然！
+- 可以在yolobody初始化以后，直接打印网络结构，一目了然！
+
+原来baseline的网络结构：
 
 ```python
 YoloBody(
@@ -2328,3 +2330,12 @@ Total params: 3.628M
 
 ```
 
+
+
+- 两个模型相比起来，baseline的总参数量7263745，更改后的总参数量为3627875，很明显，参数量几乎减少了一半。
+
+- 来看看Forward/backward pass size (MB)，更改后的比baseline大了300多，Estimated Total Size (MB)也大了300多，显存占用变大了！
+
+这里解释一下：Estimated Total Size (MB) 其实就是所有output的大小！先列出源代码，就是total_output_size， x2 for gradients，正向和反向传播。
+
+- 故在更改网络以后，参数量减少了，但是速度也没有提升，反而下降了。

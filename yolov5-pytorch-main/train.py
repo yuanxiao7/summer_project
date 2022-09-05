@@ -137,10 +137,10 @@ if __name__ == "__main__":
     mixup               = True
     mixup_prob          = 0.5
     special_aug_ratio   = 0.7
-    #------------------------------------------------------------------#
-    #   随机擦除
-    #------------------------------------------------------------------#
-    cutout              = True
+    # #------------------------------------------------------------------#
+    # #   随机擦除
+    # #------------------------------------------------------------------#
+    # cutout              = True
     #------------------------------------------------------------------#
     #   label_smoothing     标签平滑。一般0.01以下。如0.01、0.005。  当其为0时，表示没有使用标签平滑操作
     #   主要是防止过拟合
@@ -483,9 +483,9 @@ if __name__ == "__main__":
         #   构建数据集加载器 dataset打包数据
         #---------------------------------------#
         train_dataset   = YoloDataset(train_lines, input_shape, num_classes, anchors, anchors_mask, epoch_length=UnFreeze_Epoch, \
-                                        mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, cutout=cutout, train=True, special_aug_ratio=special_aug_ratio)
+                                        mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=True, special_aug_ratio=special_aug_ratio)
         val_dataset     = YoloDataset(val_lines, input_shape, num_classes, anchors, anchors_mask, epoch_length=UnFreeze_Epoch, \
-                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, cutout=False, train=False, special_aug_ratio=0)
+                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
         
         if distributed:
             train_sampler   = torch.utils.data.distributed.DistributedSampler(train_dataset, shuffle=True,)

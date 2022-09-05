@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from utils.activations import FReLU, Hardswish
-from torchsummary import summary
+from utils.attentions import se_block
 
 class SiLU(nn.Module):
     @staticmethod
@@ -43,6 +43,25 @@ class Conv(nn.Module):
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))  # 完整的经过一层卷积操作 即，conv + bn + act
+
+
+
+class SE_Conv(nn.Module):
+    # CSP Bottleneck with 3 convolutions
+    def __init__(self, c1, c2):  # ch_in, ch_out, number, shortcut, groups, expansion
+        super(SE_Conv, self).__init__()
+        self.cv1 = Conv(c1, c1, 1, 1)
+        self.cv2 = Conv(2 * c1, c2, 1)  # act=FReLU(c2)
+        self.se_block = se_block(c2)
+
+    def forward(self, x):
+        return self.cv2(torch.cat(  # 两次调整的cat
+            (
+                self.cv1(x),
+                self.se_block(x)
+            )
+            , dim=1))
+
 
 
 # 深度可分离卷积
@@ -121,7 +140,8 @@ class CSPDarknet(nn.Module):
         self.stem = nn.Sequential(
             CBA(3, base_channels, k=3),
             Conv(base_channels, base_channels, 3, 1),
-            depth_conv(base_channels, base_channels, 3, 1)
+            SE_Conv(base_channels, base_channels)  # 加上通道注意力
+            # depth_conv(base_channels, base_channels, 3, 1)  # 最开始改网络结构的组件
         )
 
         # -----------------------------------------------#
@@ -203,7 +223,7 @@ class CSPDarknet(nn.Module):
 # device = torch.device("cuda")
 # net = CSPDarknet(64, 1, 3, False).to(device)
 # print(net)
-# summary(net, (3, 640, 640))
+# # summary(net, (3, 640, 640))
 # a = torch.randn(1, 3, 640, 640).to(device)
 #
 # if __name__=="__main__":

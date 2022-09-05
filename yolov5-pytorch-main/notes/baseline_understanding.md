@@ -64,12 +64,9 @@ CSPdarknet 跟yolov3的darknet53网络架构有的很带的改动，不再是简
 
 网络结构如下所示![](D:/shuqikaohe/picture/8.png)
 
-<<<<<<< HEAD
+ 
 
-=======
-[[![img](D:/shuqikaohe/picture/8.png)](/picture\8.png)](https://github.com/yuanxiao7/summer_project/commit/3cfd44dccc2e92a4887bd738cc83b5a2564d9202)
 
->>>>>>> f719d01d29830a4f005ad0a171c05bf5b8bffde0
 
 （7月5日）
 
@@ -594,14 +591,9 @@ yolo解码
     Total GFLOPS: 115.918G
     Total params: 47.057M
 
-
-​      
 ​    
 
 
-
-
-​    
 
 
 （7月11日）
@@ -1226,3 +1218,8 @@ b'car 0.69' 545 584 717 797
 
 至此，baseline的模型就跑完了，开始疯狂魔改吧！
 
+
+
+## 补充
+
+- 后面在服务器上重新跑了baseline，模型结果在save_model这个文件里。但是忘记保存一些数据了。

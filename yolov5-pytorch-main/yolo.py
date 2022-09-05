@@ -33,7 +33,7 @@ class YOLO(object):
         # "model_path"        : 'saved_model\map_out_server_Hsilu\hsilu/best_epoch_weights.pth',  # x * Fsigmoid
         # "model_path"        : r'weights\ep030-loss0.116-val_loss0.071.pth',  # baseline 的第30个epoch获得比较好的权重
         # "model_path"        : 'saved_model\map_out_focus_loss/focus_loss/last_epoch_weights.pth',
-        "model_path"          : 'server_weights\cutout/best_epoch_weights.pth',
+        "model_path"          : 'server_weights/backbone_attention/last_epoch_weights.pth',
 
         # FReLU
         # "model_path"        : r'saved_model\map_out_server2frelu\frelu\best_epoch_weights.pth',  # frelu
@@ -66,7 +66,7 @@ class YOLO(object):
         # ---------------------------------------------------------------------#
         #   只有得分大于置信度的预测框会被保留下来   # 调整得分，可以提高召回率
         # ---------------------------------------------------------------------#
-        "confidence": 0.2,
+        "confidence": 0.5,
         # ---------------------------------------------------------------------#
         #   非极大抑制所用到的nms_iou大小  预测最好得、分最高的框对相近框的容忍程度
         #   调正的恰当也可以提高召回率，但不明显 但是重复检验的框变多

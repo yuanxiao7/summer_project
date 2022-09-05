@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <style>
+        #img {width: 300px; height: 300px}
+        #img1 {width: 300px; height: 300px}
+
+        #box {text-align: center;}
+
+    </style>
+    <script src="https://cdn.staticfile.org/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+<div id="box">
+    <h2>Mnist手写数字识别</h2>
+    <!--初始化一个img标签-->
+    <img id="img" src=" ">
+    <img id="img1" src=" ">
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="button" value="上传" id="upFileBtn">
+        <input type="button" value="结果" id="result_file">
+
+    </form>
+    <!-- 显示识别结果 -->
+<!--    <p id="p1">识别结果：<nobr id="d1"> <nobr/> </p>-->
+    <p>识别结果：<nobr id="d1"></nobr></p>
+</div>
+
+
+</body>
+<script type="text/javascript">
+    // 绑定上传按钮
+    $('#upFileBtn').click(function () {
+        var formFile = new FormData($('#uploadForm')[0])
+        $.ajax({
+            url: "/detector", // 选择给定路由
+            type: "POST",   // 选择上传方式
+            data: formFile, // 使用form表单的形式上传
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                var d = JSON.parse(data) // 解析JSON数据
+                $('#img').attr('src', d.file_url); // 更新显示的图片
+                $('#d1').html(d.detect_result) // 更新识别的结果
+            }
+        })
+    })
+</script>
+
+</html>

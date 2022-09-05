@@ -22,8 +22,7 @@ class se_block(nn.Module):
         y = self.avg_pool(x).view(b, c)
         y = self.fc(y)
         y = y.view(b, c, 1, 1)
-        return x * y     # 改动处
-
+        return x + x * y     # 改动处
 
 
 # CBAM的代码实现  通道注意力和空间注意力的结合，互补作用，目前对网络性能最好
@@ -132,8 +131,10 @@ class CA_Block(nn.Module):
         return out
 
 
-'''model = CA_Block(512)
-print(model)
-map = torch.randn(2, 512, 26, 26)
-if __name__ == "__main__":
-    outputs = model(map)'''
+
+# model = se_block(512)
+# print(model)
+# map = torch.randn(2, 512, 26, 26)
+# if __name__ == "__main__":
+#     outputs = model(map)
+#     print(outputs.shape)
