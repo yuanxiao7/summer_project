@@ -23,11 +23,12 @@ import numpy as np
 import torch
 
 
+# 随机擦除
 class Cutout(object):
     """Randomly mask out one or more patches from an image.
     Args:
-        n_holes (int): Number of patches to cut out of each image.
-        length (int): The length (in pixels) of each square patch.
+        n_holes (int): Number of patches to cut out of each image.  小黑块的数量
+        length (int): The length (in pixels) of each square patch.  小黑快的长度
     """
 
     def __init__(self, n_holes, length, fill_value):
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     save_path = "1_21.jpg"
     transform = Compose([
         transforms.ToTensor(),
-        Cutout(n_holes=30, length=10, fill_value=0.)  # length 控制擦除范围，fill_value控制用什么值进行擦除
+        Cutout(n_holes=3, length=70, fill_value=20.)  # n_holes控制数量 length 控制擦除范围，fill_value控制用什么值进行擦除
     ])
     # transform暂且把他看作一个已经实例化的函数，将多步骤给合在一起的函数
     img2 = transform(img=img)

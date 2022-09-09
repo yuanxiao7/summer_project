@@ -211,6 +211,8 @@ torch
 
 #### 高斯模糊
 
+
+
 - 高斯滤波将图像频域处理和时域处理相联系，作为低通滤波器使用，可以将低频能量（如噪声）滤去，起到图像平滑作用。
 
 - 图像的高斯模糊过程就是图像与正态分布做卷积。
@@ -251,6 +253,14 @@ print("The picture is currently being processed")
 
 
 ```
+
+
+
+![image-20220905195141795](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220905195141795.png)
+
+![image-20220905195105962](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220905195105962.png)
+
+
 
 
 
@@ -363,5 +373,7 @@ if __name__ == "__main__":
 
 
 
+paper
 
+![image-20220905195849415](C:\Users\Happy\AppData\Roaming\Typora\typora-user-images\image-20220905195849415.png)
 
